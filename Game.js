@@ -31,14 +31,11 @@ window.onload = function init()
     	{
     		board.move(MOVE_FRIESMAN, 0);
 
-    		board.move(MOVE_ENEMY, 0);
-            if (MOVED > 2)
-                board.move(MOVE_ENEMY, 2);
-    		if (MOVED > 4)
-                board.move(MOVE_ENEMY, 3);
-            if (MOVED > 6)
-                board.move(MOVE_ENEMY, 1);
-    		board.display();
+            for (var i = 0; i < 4; i++)
+            {
+        		board.move(MOVE_ENEMY, i);
+        		board.display();
+            }
     	}
 
     }
