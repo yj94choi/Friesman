@@ -16,11 +16,19 @@ var mTranslationLoc;
 
 var gameBoard;
 var field;
-var directions = [];
+var walls = [];
+var ketchups = [];
 var cellSize = 1;
 
 var MOVE_FRIESMAN = 0;
 var MOVE_ENEMY = 1;
+
+var num_cube_points = 0;
+var num_sphere_points = 0;
+var num_friesman_points = 0;
+var num_ring_points = 0;
+
+var timer = 0;
 
 window.onload = function init()
 {
@@ -30,20 +38,29 @@ window.onload = function init()
     if ( !gl ) { alert( "WebGL isn't available" ); }
 
     gameBoard = new Board();
-    field = gameBoard.mapArray;
 
     for ( var x = 0; x < 21; x++)
     {
         for ( var y = 0; y < 21; y++)
         {
-            if (field[y][x] === WALL)
+            if (gameBoard.mapArray[y][x] === WALL)
             {
-                directions.push( vec3(x*cellSize,y*cellSize,0) );
+                walls.push( vec3(x*cellSize, y*cellSize, 0) );
             }
         }
     }
 
-    window.onkeydown = function(input){
+    cube();
+    num_cube_points = points.length;
+    ketchupdot(3, false);
+    num_sphere_points = points.length - num_cube_points;
+    friesman();
+    num_friesman_points = points.length - num_sphere_points - num_cube_points;
+    makeTorus(0.7, 0.3, 100, 20, 1.0);
+    num_ring_points = points.length - num_friesman_points - num_sphere_points - num_cube_points;
+
+    window.onkeydown = function(input)
+    {
         if(input.keyCode ==74) //when pressed j
             xaxis += 0.25;
         else if(input.keyCode ==75) //when pressed k
@@ -59,7 +76,7 @@ window.onload = function init()
             zaxis = 0;
             TurnAngle = 0;
         }
-        else if (input.keyCode === 38)       // up arrow
+        else if (input.keyCode === 38)   // up arrow
         {
             gameBoard.friesMan.currDir = NORTH;
         }
@@ -77,57 +94,18 @@ window.onload = function init()
         }
         else if (input.keyCode === 90)  // z key
         {
-            gameBoard.move(MOVE_FRIESMAN, 0);
+            // gameBoard.move(MOVE_FRIESMAN, 0);
 
-            for (var i = 0; i < 4; i++)
-            {
-                gameBoard.move(MOVE_ENEMY, i);
-                gameBoard.display();
-            }
-            MOVED++;
+            // for (var i = 0; i < 4; i++)
+            // {
+            //     gameBoard.move(MOVE_ENEMY, i);
+            //     gameBoard.display();
+            // }
+            // MOVED++;
         }
 
     }
 
-    //vertices for cube & outline
-    var vertices = [
-        vec4(-0.5, 0.5, 0.5, 1.0),
-        vec4(-0.5,-0.5, 0.5, 1.0),
-        vec4( 0.5,-0.5, 0.5, 1.0),
-        vec4( 0.5, 0.5, 0.5, 1.0),
-        vec4(-0.5, 0.5, -0.5,1.0),
-        vec4(-0.5,-0.5, -0.5,1.0),
-        vec4( 0.5,-0.5, -0.5,1.0),
-        vec4( 0.5, 0.5, -0.5,1.0),  
-        vec4(-1.0,0.0,0.0,1.0),
-        vec4(1.0,0.0,0.0,1.0),
-        vec4(0.0,-1.0,0.0,1.0),
-        vec4(0.0,1.0,0.0,1.0)
-    ];
-
-    //draw cube (with triangle strip) and outline of cube
-    points = [  
-        vertices[0], vertices[1], vertices[2], vertices[6], vertices[3], 
-        vertices[7], vertices[4], vertices[6], vertices[5], vertices[1], 
-        vertices[4], vertices[0], vertices[3], vertices[2],
-
-        vertices[0], vertices[1],
-        vertices[1], vertices[2],
-        vertices[2], vertices[3],
-        vertices[3], vertices[0],
-        vertices[4], vertices[5],
-        vertices[5], vertices[6],
-        vertices[6], vertices[7],
-        vertices[7], vertices[4],
-        vertices[0], vertices[4],
-        vertices[1], vertices[5],
-        vertices[2], vertices[6],
-        vertices[3], vertices[7],
-        vertices[8], vertices[9],
-        vertices[10], vertices[11]
-    ];
-
-    //var rotationMatrix = rotate( 45.0, [1.0, 0.0, 0.0]);
     //  Configure WebGL
     gl.viewport( 0, 0, canvas.width, canvas.height );
     gl.clearColor( 0.0, 0.0, 0.0, 1.0 );
@@ -154,6 +132,8 @@ window.onload = function init()
 
     mTranslationLoc = gl.getUniformLocation(program, "mTranslation");
 
+    mScaleLoc = gl.getUniformLocation(program, "mScale");
+
     objectIDLoc = gl.getUniformLocation(program, "objectID");
 
     render();
@@ -164,20 +144,69 @@ function render()
 {
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+    // TODO: USE A REAL TIMER
+    if(timer === 10)
+    {
+        gameBoard.move(MOVE_FRIESMAN, 0);
+        for (var i = 0; i < 4; i++)
+        {
+            gameBoard.move(MOVE_ENEMY, i);
+            // gameBoard.display();
+        }
+        MOVED++;
+        timer = 0;
+    }
+
     var Turn = rotate(TurnAngle, vec3(0,1,0));
     gl.uniformMatrix4fv(mTurningLoc, false, new flatten(Turn));
 
-    // render cubes (maze) with outline
-    for(var k = 0; k < directions.length; k++)
+    // render cubes (maze)
+    for(var k = 0; k < walls.length; k++)
     {
-        translateM = mult( translate(-10+xaxis, -10+yaxis, -30+zaxis), translate(directions[k]) );
-
+        translateM = mult( translate(-10+xaxis, -10+yaxis, -30+zaxis), translate(walls[k]) );
         gl.uniformMatrix4fv(mTranslationLoc, false, new flatten(translateM));
+
+        gl.uniformMatrix4fv(mScaleLoc, false, new flatten(mat4()));
+
         gl.uniform1i(objectIDLoc, 0);
-        gl.drawArrays( gl.TRIANGLE_STRIP, 0, 14);
-        gl.uniform1i(objectIDLoc, 1);
-        gl.drawArrays( gl.LINES, 14, 24);
+        gl.drawArrays( gl.TRIANGLE_STRIP, 0, num_cube_points);
     }
 
+    // render spheres (ketchup dots)
+    for ( var x = 0; x < 21; x++)
+    {
+        for ( var y = 0; y < 21; y++)
+        {
+            if (gameBoard.mapArray[y][x] === ROAD_KETCHUP)
+            {
+                translateM = mult( translate(-10+xaxis, -10+yaxis, -30+zaxis), translate(x*cellSize, y*cellSize, 0.0) );
+                gl.uniformMatrix4fv(mTranslationLoc, false, new flatten(translateM));
+
+                gl.uniformMatrix4fv(mScaleLoc, false, new flatten(scale(0.15, 0.15, 0.15)));
+
+                gl.uniform1i(objectIDLoc, 1);
+                gl.drawArrays(gl.TRIANGLES, num_cube_points, num_sphere_points);
+            }
+        }
+    }
+
+    // render friesman
+    translateM = mult( translate(-10+xaxis, -10+yaxis, -30+zaxis), translate(gameBoard.friesMan.x, gameBoard.friesMan.y, 0.0) );
+    gl.uniformMatrix4fv(mTranslationLoc, false, new flatten(translateM));
+    gl.uniformMatrix4fv(mScaleLoc, false, new flatten(scale(0.5, 0.5, 0.5)));
+    gl.uniform1i(objectIDLoc, 2);
+    gl.drawArrays( gl.TRIANGLES, num_cube_points+num_sphere_points, num_friesman_points);
+
+    // render enemies
+    for(var i = 0; i < 4; i++)
+    {
+        translateM = mult( translate(-10+xaxis, -10+yaxis, -30+zaxis), translate(gameBoard.enemyArray[i].x, gameBoard.enemyArray[i].y, 0.0) );
+        gl.uniformMatrix4fv(mTranslationLoc, false, new flatten(translateM));
+        gl.uniformMatrix4fv(mScaleLoc, false, new flatten(scale(0.3, 0.3, 0.3)));
+        gl.uniform1i(objectIDLoc, 3);
+        gl.drawArrays( gl.TRIANGLE_STRIP, num_cube_points+num_sphere_points+num_friesman_points, num_ring_points);        
+    }
+
+    timer++;
     window.requestAnimFrame(render);
 }

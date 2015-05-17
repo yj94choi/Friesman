@@ -1,4 +1,3 @@
-
 var ROAD_EMPTY = ' ';
 var ROAD_KETCHUP = '.';
 var BLANK_SPACE = 'x';

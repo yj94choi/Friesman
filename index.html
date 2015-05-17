@@ -10,11 +10,15 @@ attribute vec4 vPosition;
 uniform mat4 mPerspective;
 uniform mat4 mTranslation;
 uniform mat4 mTurning;
+uniform mat4 mScale;
+
+// varying vec2 fTexCoord;
 
 void
 main()
 {
-    gl_Position = mPerspective * mTurning * mTranslation * vPosition;
+	// fTexCoord = (vTexCoord).xy;
+    gl_Position = mPerspective * mTurning * mTranslation * mScale * vPosition;
 }
 </script>
 
@@ -22,8 +26,13 @@ main()
 precision mediump float;
 
 // id 0 : walls (blue)
-// id 1 : outline (white)
+// id 1 : ketchup dots (red)
+// id 2 : friesman (yellow)
+// id 3 : enemies (green)
 uniform int objectID;
+
+// varying vec2 fTexCoord;
+// uniform sampler2D texture;
 
 void
 main()
@@ -31,7 +40,12 @@ main()
 	if(objectID == 0)
 		gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);
 	if(objectID == 1)
-		gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+		gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+	if(objectID == 2)
+		// gl_FragColor = texture2D( texture, fTexCoord );
+		gl_FragColor = vec4(1.0, 1.0, 0.0, 1.0);
+	if(objectID == 3)
+		gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
 }
 </script>
 
@@ -44,6 +58,8 @@ main()
 <script type="text/javascript" src="Characters.js"></script>
 <script type="text/javascript" src="friesman.js"></script>
 <script type="text/javascript" src="ring.js"></script>
+<script type="text/javascript" src="ketchupdot.js"></script>
+<script type="text/javascript" src="cube.js"></script>
 
 <body>
 <canvas id="gl-canvas" width="960" height="540">
