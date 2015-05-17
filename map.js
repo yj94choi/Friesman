@@ -1,5 +1,5 @@
 var gl;
-var points;
+var points =[];
 var colors = [];
 var crosshairbool = false;
 var canvas;
@@ -17,6 +17,11 @@ var ScaleF = 180;
 var ScaleS = 0;
 
 var gameBoard;
+var field;
+var directions = [];
+var x;
+var y;
+var cellSize = 1;
 
 window.onload = function init()
 {
@@ -26,7 +31,21 @@ window.onload = function init()
     if ( !gl ) { alert( "WebGL isn't available" ); }
 
     gameBoard = new Board();
-    // gameBoard.mapArray;
+    field = gameBoard.mapArray;
+
+    for ( x = 0; x < 21; x++)
+    {
+        for ( y = 0; y < 21; y++)
+        {
+            if (field[y][x] === WALL)
+            {
+                directions.push( vec3(x*cellSize,y*cellSize,0) );
+            }
+        }
+    }
+
+    // console.log(directions);
+
 
     ColorArray = [
         vec4( 0.9, 0.9, 0.2, 1.0 ),  // oarnge
@@ -112,7 +131,6 @@ window.onload = function init()
         vertices[1], vertices[5],
         vertices[2], vertices[6],
         vertices[3], vertices[7],
-
         vertices[8], vertices[9],
         vertices[10], vertices[11]
     ];
@@ -143,13 +161,6 @@ window.onload = function init()
 
 function render() 
 {
-    //translation matrix--cube in cubic manner
-    var translateArray = [translate(10,10,10), translate(-10,10,10),
-                          translate(10,-10, 10), translate(10,10,-10),
-                          translate(-10,-10,10), translate(-10,10,-10),
-                          translate(10,-10,-10), translate(-10,-10,-10)
-                           ];
-
     var perspectiveMatrix = perspective( 60 + Zoom, canvas.width/canvas.height, 1, 1000);
     
     var ZRotMatrix = rotate(AngleRotation, vec3(0.0,0.0,1.0));
@@ -158,13 +169,13 @@ function render()
 
     var Turn = rotate(TurnAngle, vec3(0,1,0));
 
-    ScaleF += 0.1;
-    ScaleS = Math.cos(ScaleF)*0.1 + 1.0;
+    // ScaleF += 0.1;
+    // ScaleS = Math.cos(ScaleF)*0.1 + 1.0;
 
-    var Scale = scale(ScaleS, ScaleS, ScaleS);
+    // var Scale = scale(ScaleS, ScaleS, ScaleS);
 
-    var mScale = gl.getUniformLocation(program, "mScale");
-    gl.uniformMatrix4fv(mScale, false, new flatten(Scale));
+    // var mScale = gl.getUniformLocation(program, "mScale");
+    // gl.uniformMatrix4fv(mScale, false, new flatten(Scale));
 
     var mTurning = gl.getUniformLocation(program, "mTurning");
     gl.uniformMatrix4fv(mTurning, false, new flatten(Turn));
@@ -178,17 +189,15 @@ function render()
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     //create 8 cubes with white outlines
-    for(var k = 0; k < 8; k++)
+    for(var k = 0; k < directions.length; k++)
     {
+
         colors = [];
         
         for(var i = 0; i < 14; i++)
-            colors.push(ColorArray[k]);
+            colors.push(vec4(0.0, 0.0, 1.0, 1.0));
 
         for(var i = 0; i < 24; i++)
-            colors.push(vec4(1.0, 1.0, 1.0, 1.0));
-
-        for(var i = 0; i < 4; i++)
             colors.push(vec4(1.0, 1.0, 1.0, 1.0));
 
         var Colorbuffer = gl.createBuffer();
@@ -199,27 +208,13 @@ function render()
         gl.vertexAttribPointer( vColor, 4, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray( vColor );
 
-        translateM = mult(translate(xaxis,yaxis,-30 + zaxis), translateArray[k]);
+        translateM = mult( translate(-10+xaxis, -10+yaxis, -30+zaxis), translate(directions[k]) );
+
         var mTranslation = gl.getUniformLocation(program, "mTranslation");
         gl.uniformMatrix4fv(mTranslation, false, new flatten(translateM));
-        gl.drawArrays( gl.TRIANGLE_STRIP, 0, 14 );
+        gl.drawArrays( gl.TRIANGLE_STRIP, 0, 14);
         gl.drawArrays( gl.LINES, 14, 24);
     }
-   
-    //crosshair
-    if(crosshairbool)
-    {
-        translateM = mat4();
-        gl.uniformMatrix4fv(mTranslation, false, new flatten(translateM));
-        perspectiveMatrix = mat4();
-        gl.uniformMatrix4fv(mPerspective, false, new flatten(perspectiveMatrix));
-        ZRotMatrix = mat4();
-        gl.uniformMatrix4fv(mRotation, false, new flatten(ZRotMatrix));
-        Turning = mat4();
-        gl.uniformMatrix4fv(mTurning, false, new flatten(Turning));
-        Scale = mat4();
-        gl.uniformMatrix4fv(mScale, false, new flatten(Scale));
-        gl.drawArrays( gl.LINES, 38, 4);
-    }
+
     window.requestAnimFrame(render);
 }

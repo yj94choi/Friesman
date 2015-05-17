@@ -19,7 +19,8 @@ void
 main()
 {
 	fColor = vColor;
-    gl_Position = mPerspective  * mTurning * mTranslation * mRotation * mScale * vPosition;
+    // gl_Position = mPerspective  * mTurning * mTranslation * mRotation * mScale * vPosition;
+    gl_Position = mPerspective * mTurning * mTranslation * vPosition;
 }
 </script>
 
