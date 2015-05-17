@@ -9,17 +9,11 @@
 attribute vec4 vPosition;
 uniform mat4 mPerspective;
 uniform mat4 mTranslation;
-uniform mat4 mRotation;
 uniform mat4 mTurning;
-uniform mat4 mScale;
-attribute vec4 vColor;
-varying vec4 fColor;
 
 void
 main()
 {
-	fColor = vColor;
-    // gl_Position = mPerspective  * mTurning * mTranslation * mRotation * mScale * vPosition;
     gl_Position = mPerspective * mTurning * mTranslation * vPosition;
 }
 </script>
@@ -27,23 +21,29 @@ main()
 <script id="fragment-shader" type="x-shader/x-fragment">
 precision mediump float;
 
-varying vec4 fColor;
+// id 0 : walls (blue)
+// id 1 : outline (white)
+uniform int objectID;
 
 void
 main()
 {
-    gl_FragColor = fColor;
+	if(objectID == 0)
+		gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);
+	if(objectID == 1)
+		gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
 }
 </script>
 
-<script type="text/javascript" src="webgl-utils.js"></script>
-<script type="text/javascript" src="initShaders.js"></script>
-<script type="text/javascript" src="MV.js"></script>
+<script type="text/javascript" src="util/webgl-utils.js"></script>
+<script type="text/javascript" src="util/initShaders.js"></script>
+<script type="text/javascript" src="util/MV.js"></script>
 
 <script type="text/javascript" src="Game.js"></script>
 <script type="text/javascript" src="Board.js"></script>
 <script type="text/javascript" src="Characters.js"></script>
-<script type="text/javascript" src="map.js"></script>
+<script type="text/javascript" src="friesman.js"></script>
+<script type="text/javascript" src="ring.js"></script>
 
 <body>
 <canvas id="gl-canvas" width="960" height="540">
