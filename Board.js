@@ -2,6 +2,7 @@
 var ROAD_EMPTY = ' ';
 var ROAD_KETCHUP = '.';
 var BLANK_SPACE = 'x';
+var DOOR = 'd'
 var WALL = 'o';
 var MOVED = 0;
 
@@ -97,7 +98,7 @@ Board.prototype.move = function(type, number)
 			{
 				//////////////// TODO: UPDATE THE SCORE AND DECREMENT THE # OF KETCHUP DOTS //////////////////////////////
 				this.mapArray[currY][currX] = ROAD_EMPTY;	// mark the point as visited
-				this.mapArray[nextY][nextX] = 'F';			// makr the next point as Friesman
+				this.mapArray[nextY][nextX] = 'F';			// mark the next point as Friesman
 				this.friesMan.x += (nextX - currX);			// update Friesman's position
 				this.friesMan.y += (nextY - currY);
 			}
@@ -110,11 +111,6 @@ Board.prototype.move = function(type, number)
 	// Enemy's move
 	else
 	{
-		his.mapArray[currY][currX] = this.prevState[number];
-					this.prevState[number] = this.mapArray[nextY][nextX];
-					this.mapArray[nextY][nextX] = currChar;
-					this.enemyArray[number].x += (nextX - currX);
-					this.enemyArray[number].y += (nextY - currY);
 		if(MOVED < 10)
 		{
 			switch(MOVED)
@@ -138,45 +134,228 @@ Board.prototype.move = function(type, number)
 				case 1:
 					if(number === 0)
 					{
-						this.mapArray[13][9] = ROAD_EMPTY;
-						this.prevState[0] = this.mapArray[14][9];
+						this.mapArray[13][9] = this.prevState[0];
+						this.prevState[0] = this.mapArray[13][8];
 						this.mapArray[14][9] = '0';
 						this.enemyArray[0].y = 14;
 					}
 					if(number === 2)
 					{
-						this.mapArray[11][10] = ROAD_EMPTY;
-						this.prevState[2] = this.mapArray[12][10];
-						this.mapArray[12][10] = '2';
+						this.mapArray[12][10] = this.prevState[2];
+						this.prevState[2] = this.mapArray[13][10];
+						this.mapArray[13][10] = '2';
+						this.enemyArray[2].y = 13;
+						this.enemyArray.passedDoor = true;
+					}
+					return;
+				case 2:
+					if(number === 0)
+					{
+						this.mapArray[14][9] = this.prevState[0];
+						this.prevState[0] = this.mapArray[15][9];
+						this.mapArray[15][9] = '0';
+						this.enemyArray[0].y = 15;
+					}
+					if(number === 2)
+					{
+						this.mapArray[13][10] = this.prevState[2];
+						this.prevState[2] = this.mapArray[13][9];
+						this.mapArray[13][9] = '2';
+						this.enemyArray[2].x = 9;
+					}
+					return;
+				case 3:
+					if(number === 0)
+					{
+						this.mapArray[15][9] = this.prevState[0];
+						this.prevState[0] = this.mapArray[15][8];
+						this.mapArray[15][8] = '0';
+						this.enemyArray[0].x = 8;
+					}
+					if(number === 2)
+					{
+						this.mapArray[13][9] = this.prevState[2];
+						this.prevState[2] = this.mapArray[13][8];
+						this.mapArray[13][8] = '2';
+						this.enemyArray[2].x = 8;
+					}
+					if(number === 1)
+					{
+						this.mapArray[11][9] = ROAD_EMPTY;
+						this.prevState[1] = this.mapArray[11][10];
+						this.mapArray[11][10] = '1';
+						this.enemyArray[1].x = 10;
+					}
+					return;
+				case 4:
+					if(number === 0)
+					{
+						this.mapArray[15][8] = this.prevState[0];
+						this.prevState[0] = this.mapArray[15][7];
+						this.mapArray[15][7] = '0';
+						this.enemyArray[0].x = 7;
+					}
+					if(number === 2)
+					{
+						this.mapArray[13][8] = this.prevState[2];
+						this.prevState[2] = this.mapArray[13][7];
+						this.mapArray[13][7] = '2';
+						this.enemyArray[2].x = 7;
+					}
+					if(number === 1)
+					{
+						this.mapArray[11][10] = this.prevState[1];
+						this.prevState[1] = this.mapArray[12][10];
+						this.mapArray[12][10] = '1';
+						this.enemyArray[1].y = 12;
+					}
+					return;
+				case 5:
+					if(number === 0)
+					{
+						this.mapArray[15][7] = this.prevState[0];
+						this.prevState[0] = this.mapArray[16][7];
+						this.mapArray[16][7] = '0';
+						this.enemyArray[0].y = 16;
+					}
+					if(number === 2)
+					{
+						this.mapArray[13][7] = this.prevState[2];
+						this.prevState[2] = this.mapArray[12][7];
+						this.mapArray[12][7] = '2';
 						this.enemyArray[2].y = 12;
 					}
 					if(number === 1)
 					{
-
+						this.mapArray[12][10] = this.prevState[1];
+						this.prevState[1] = this.mapArray[13][10];
+						this.mapArray[13][10] = '1';
+						this.enemyArray[1].y = 13;
 					}
 					return;
-				case 2:
-					// ...
-					return;
-				case 3:
-					// ...
-					return;
-				case 4:
-					// ...
-					return;
-				case 5:
-					// ...
-					return;
 				case 6:
-					// ...
+					if(number === 0)
+					{
+						this.mapArray[16][7] = this.prevState[0];
+						this.prevState[0] = this.mapArray[17][7];
+						this.mapArray[17][7] = '0';
+						this.enemyArray[0].y = 17;
+					}
+					if(number === 2)
+					{
+						this.mapArray[12][7] = this.prevState[2];
+						this.prevState[2] = this.mapArray[11][7];
+						this.mapArray[11][7] = '2';
+						this.enemyArray[2].y = 11;
+					}
+					if(number === 1)
+					{
+						this.mapArray[13][10] = this.prevState[1];
+						this.prevState[1] = this.mapArray[13][9];
+						this.mapArray[13][9] = '1';
+						this.enemyArray[1].x = 9;
+					}
+					if(number === 3)
+					{
+						this.mapArray[11][11] = ROAD_EMPTY;
+						this.prevState[3] = this.mapArray[11][10];
+						this.mapArray[11][10] = '3';
+						this.enemyArray[3].x = 10;
+					}
 					return;
 				case 7:
-					// ...
+					if(number === 0)
+					{
+						this.mapArray[17][7] = this.prevState[0];
+						this.prevState[0] = this.mapArray[17][6];
+						this.mapArray[17][6] = '0';
+						this.enemyArray[0].x = 6;
+					}
+					if(number === 2)
+					{
+						this.mapArray[11][7] = this.prevState[2];
+						this.prevState[2] = this.mapArray[11][6];
+						this.mapArray[11][6] = '2';
+						this.enemyArray[2].x = 6;
+					}
+					if(number === 1)
+					{
+						this.mapArray[13][9] = this.prevState[1];
+						this.prevState[1] = this.mapArray[13][8];
+						this.mapArray[13][8] = '1';
+						this.enemyArray[1].x = 8;
+					}
+					if(number === 3)
+					{
+						this.mapArray[11][10] = this.prevState[3];
+						this.prevState[3] = this.mapArray[12][10];
+						this.mapArray[12][10] = '3';
+						this.enemyArray[3].y = 12;
+					}
 					return;
 				case 8:
-					//...
+					if(number === 0)
+					{
+						this.mapArray[17][6] = this.prevState[0];
+						this.prevState[0] = this.mapArray[17][5];
+						this.mapArray[17][5] = '0';
+						this.enemyArray[0].x = 5;
+					}
+					if(number === 2)
+					{
+						this.mapArray[11][6] = this.prevState[2];
+						this.prevState[2] = this.mapArray[11][5];
+						this.mapArray[11][5] = '2';
+						this.enemyArray[2].x = 5;
+					}
+					if(number === 1)
+					{
+						this.mapArray[13][8] = this.prevState[1];
+						this.prevState[1] = this.mapArray[13][7];
+						this.mapArray[13][7] = '1';
+						this.enemyArray[1].x = 7;
+					}
+					if(number === 3)
+					{
+						this.mapArray[12][10] = this.prevState[3];
+						this.prevState[3] = this.mapArray[13][10];
+						this.mapArray[13][10] = '3';
+						this.enemyArray[3].y = 13;
+					}
 					return;
 				case 9:
+					if(number === 0)
+					{
+						this.mapArray[17][5] = this.prevState[0];
+						this.prevState[0] = this.mapArray[16][5];
+						this.mapArray[16][5] = '0';
+						this.enemyArray[0].y = 16;
+						this.enemyArray[3].currDir = SOUTH;
+					}
+					if(number === 2)
+					{
+						this.mapArray[11][5] = this.prevState[2];
+						this.prevState[2] = this.mapArray[10][5];
+						this.mapArray[10][5] = '2';
+						this.enemyArray[2].y = 10;
+						this.enemyArray[3].currDir = SOUTH;
+					}
+					if(number === 1)
+					{
+						this.mapArray[13][7] = this.prevState[1];
+						this.prevState[1] = this.mapArray[12][7];
+						this.mapArray[12][7] = '1';
+						this.enemyArray[1].y = 12;
+						this.enemyArray[3].currDir = SOUTH;
+					}
+					if(number === 3)
+					{
+						this.mapArray[13][10] = this.prevState[3];
+						this.prevState[3] = this.mapArray[13][9];
+						this.mapArray[13][9] = '3';
+						this.enemyArray[3].x = 9;
+						this.enemyArray[3].currDir = WEST;
+					}
 					return;
 			}
 		}
@@ -199,9 +378,9 @@ Board.prototype.move = function(type, number)
 			if(dir === EAST || dir === WEST)
 				var nextY = currY;
 			else if(dir === NORTH)
-				var nextY = currY + 1;
-			else if(dir === SOUTH)
 				var nextY = currY - 1;
+			else if(dir === SOUTH)
+				var nextY = currY + 1;
 
 			if(nextY >= 0 && nextY <= 20 && nextX >= 0 && nextX <= 20)
 			{
@@ -240,6 +419,5 @@ Board.prototype.move = function(type, number)
 				repeat = true;
 			}
 		} while(repeat)
-		MOVED++;
 	}
 }
