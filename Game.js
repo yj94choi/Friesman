@@ -36,6 +36,7 @@ window.onload = function init()
         		board.move(MOVE_ENEMY, i);
         		board.display();
             }
+            MOVED++;
     	}
 
     }
