@@ -14,7 +14,14 @@ function Board()
 					   new Enemy(SMART_ENEMY, 11, 11, WEST, false)];
 
 	// creating Friesman
-	this.friesMan = new Friesman(10, 5);
+	this.friesMan = new Friesman(10, 5, NORTH);
+
+	this.prevEnemyArray = [new Enemy(DUMB_ENEMY, 10, 13, WEST, true),
+						   new Enemy(DUMB_ENEMY, 9, 11, EAST, false),
+						   new Enemy(SMART_ENEMY, 10, 11, NORTH, false),
+						   new Enemy(SMART_ENEMY, 11, 11, WEST, false)]
+
+    this.prevFriesMan = new Friesman(10, 5, NORTH);
 
 	// creating the map
 	this.mapArray = [
@@ -61,7 +68,7 @@ Board.prototype.display = function()
 		{
 			temp += this.mapArray[i][j];
 		}
-		console.log(temp);
+		// console.log(temp);
 	}
 }
 
@@ -72,6 +79,8 @@ Board.prototype.move = function(type, number)
 	// Friesman's move
 	if (type === MOVE_FRIESMAN)
 	{
+		this.prevFriesMan.x = this.friesMan.x;
+		this.prevFriesMan.y = this.friesMan.y;
 		var currX = this.friesMan.x;
 		var currY = this.friesMan.y;
 		var dir = this.friesMan.currDir;
@@ -110,6 +119,8 @@ Board.prototype.move = function(type, number)
 	// Enemy's move
 	else
 	{
+		this.prevEnemyArray[number].x = this.enemyArray[number].x;
+		this.prevEnemyArray[number].y = this.enemyArray[number].y;
 		if(MOVED < 10)
 		{
 			switch(MOVED)
@@ -385,8 +396,8 @@ Board.prototype.move = function(type, number)
 			{
 				if(this.mapArray[nextY][nextX] === ROAD_KETCHUP || this.mapArray[nextY][nextX] === ROAD_EMPTY || (this.mapArray[nextY][nextX] === 'd' && !this.enemyArray[number].passedDoor))
 				{
-					if(number === 1)
-						console.log("passedDoor: " + this.enemyArray[number].passedDoor.toString());
+					// if(number === 1)
+					// 	console.log("passedDoor: " + this.enemyArray[number].passedDoor.toString());
 					if(this.mapArray[nextY][nextX] === 'd')
 						this.enemyArray[number].passedDoor = true;		
 					this.mapArray[currY][currX] = this.prevState[number];
@@ -406,14 +417,14 @@ Board.prototype.move = function(type, number)
 				}
 				else
 				{
-					console.log("IN HERE 1");
+					// console.log("IN HERE 1");
 					this.enemyArray[number].randDir();
 					repeat = true;
 				}
 			}
 			else
 			{
-				console.log("IN HERE 2");
+				// console.log("IN HERE 2");
 				this.enemyArray[number].randDir();
 				repeat = true;
 			}

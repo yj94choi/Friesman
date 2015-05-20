@@ -145,13 +145,13 @@ function render()
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     // TODO: USE A REAL TIMER
-    if(timer === 10)
+    if(timer%10 === 0)
     {
+
         gameBoard.move(MOVE_FRIESMAN, 0);
         for (var i = 0; i < 4; i++)
         {
             gameBoard.move(MOVE_ENEMY, i);
-            // gameBoard.display();
         }
         MOVED++;
         timer = 0;
@@ -191,7 +191,9 @@ function render()
     }
 
     // render friesman
-    translateM = mult( translate(-10+xaxis, -10+yaxis, -30+zaxis), translate(gameBoard.friesMan.x, gameBoard.friesMan.y, 0.0) );
+    var xAmount = gameBoard.prevFriesMan.x + (gameBoard.friesMan.x - gameBoard.prevFriesMan.x) * timer / 10;
+    var yAmount = gameBoard.prevFriesMan.y + (gameBoard.friesMan.y - gameBoard.prevFriesMan.y) * timer / 10;
+    translateM = mult( translate(-10+xaxis, -10+yaxis, -30+zaxis), translate(xAmount, yAmount, 0.0) );
     gl.uniformMatrix4fv(mTranslationLoc, false, new flatten(translateM));
     gl.uniformMatrix4fv(mScaleLoc, false, new flatten(scale(0.5, 0.5, 0.5)));
     gl.uniform1i(objectIDLoc, 2);
@@ -200,7 +202,9 @@ function render()
     // render enemies
     for(var i = 0; i < 4; i++)
     {
-        translateM = mult( translate(-10+xaxis, -10+yaxis, -30+zaxis), translate(gameBoard.enemyArray[i].x, gameBoard.enemyArray[i].y, 0.0) );
+        var xAmount = gameBoard.prevEnemyArray[i].x + (gameBoard.enemyArray[i].x - gameBoard.prevEnemyArray[i].x) * timer / 10;
+        var yAmount = gameBoard.prevEnemyArray[i].y + (gameBoard.enemyArray[i].y - gameBoard.prevEnemyArray[i].y) * timer / 10;
+        translateM = mult( translate(-10+xaxis, -10+yaxis, -30+zaxis), translate(xAmount, yAmount, 0.0) );
         gl.uniformMatrix4fv(mTranslationLoc, false, new flatten(translateM));
         gl.uniformMatrix4fv(mScaleLoc, false, new flatten(scale(0.3, 0.3, 0.3)));
         gl.uniform1i(objectIDLoc, 3);
