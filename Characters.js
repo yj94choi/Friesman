@@ -16,6 +16,7 @@ function Friesman(startX, startY, dir)
 	this.x = startX;
 	this.y = startY;
 	this.currDir = dir;
+	this.nextDir = dir;
 }
 
 // if enemyType === 0, dumbEnemy

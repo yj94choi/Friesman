@@ -83,36 +83,47 @@ Board.prototype.move = function(type, number)
 		this.prevFriesMan.y = this.friesMan.y;
 		var currX = this.friesMan.x;
 		var currY = this.friesMan.y;
-		var dir = this.friesMan.currDir;
-
-		if(dir === NORTH || dir === SOUTH)
-			var nextX = currX;
-		else if(dir === EAST)
-			var nextX = currX + 1;
-		else if(dir === WEST)
-			var nextX = currX - 1;
-
-		if(dir === EAST || dir === WEST)
-			var nextY = currY;
-		else if(dir === NORTH)
-			var nextY = currY + 1;
-		else if(dir === SOUTH)
-			var nextY = currY - 1;
-
-		// check the bound
-		if(nextY >= 0 && nextY <= 20 && nextX >= 0 && nextX <= 20)
+		// try to move in direction 'nextDir'. if unable to move, move in currDir
+		for(var i = 0; i < 2; i++)
 		{
-			if(this.mapArray[nextY][nextX] === ROAD_KETCHUP || this.mapArray[nextY][nextX] === ROAD_EMPTY)
+			if(i === 0)
+				var dir = this.friesMan.nextDir;
+			else
+				var dir = this.friesMan.currDir;
+
+			if(dir === NORTH || dir === SOUTH)
+				var nextX = currX;
+			else if(dir === EAST)
+				var nextX = currX + 1;
+			else if(dir === WEST)
+				var nextX = currX - 1;
+
+			if(dir === EAST || dir === WEST)
+				var nextY = currY;
+			else if(dir === NORTH)
+				var nextY = currY + 1;
+			else if(dir === SOUTH)
+				var nextY = currY - 1;
+
+			// check the bound
+			if(nextY >= 0 && nextY <= 20 && nextX >= 0 && nextX <= 20)
 			{
-				//////////////// TODO: UPDATE THE SCORE AND DECREMENT THE # OF KETCHUP DOTS //////////////////////////////
-				this.mapArray[currY][currX] = ROAD_EMPTY;	// mark the point as visited
-				this.mapArray[nextY][nextX] = 'F';			// mark the next point as Friesman
-				this.friesMan.x += (nextX - currX);			// update Friesman's position
-				this.friesMan.y += (nextY - currY);
-			}
-			else if(this.mapArray[nextY][nextX] === '0' || this.mapArray[nextY][nextX] === '1' || this.mapArray[nextY][nextX] === '2' || this.mapArray[nextY][nextX] === '3')
-			{
-				this.died = true;
+				if(this.mapArray[nextY][nextX] === ROAD_KETCHUP || this.mapArray[nextY][nextX] === ROAD_EMPTY)
+				{
+					//////////////// TODO: UPDATE THE SCORE AND DECREMENT THE # OF KETCHUP DOTS //////////////////////////////
+					this.mapArray[currY][currX] = ROAD_EMPTY;	// mark the point as visited
+					this.mapArray[nextY][nextX] = 'F';			// mark the next point as Friesman
+					this.friesMan.x += (nextX - currX);			// update Friesman's position
+					this.friesMan.y += (nextY - currY);
+					if(i === 0)
+						this.friesMan.currDir = dir;
+					return;
+				}
+				else if(this.mapArray[nextY][nextX] === '0' || this.mapArray[nextY][nextX] === '1' || this.mapArray[nextY][nextX] === '2' || this.mapArray[nextY][nextX] === '3')
+				{
+					this.died = true;
+					return;
+				}
 			}
 		}
 	}

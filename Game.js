@@ -10,9 +10,10 @@ var xaxis = 0;
 var yaxis = 0;
 var zaxis = 0;
 var AngleRotation = 0;
-var TurnAngle = 0;
-var mTurningLoc;
+var modelViewIndex = 0;
+var mModelViewLoc;
 var mTranslationLoc;
+var mHeadingLoc;
 
 var gameBoard;
 var field;
@@ -74,34 +75,36 @@ window.onload = function init()
             yaxis = 0;
             xaxis = 0;
             zaxis = 0;
-            TurnAngle = 0;
         }
         else if (input.keyCode === 38)   // up arrow
         {
-            gameBoard.friesMan.currDir = NORTH;
+            if(modelViewIndex === 0 || modelViewIndex === 2)
+                gameBoard.friesMan.nextDir = NORTH;
         }
         else if (input.keyCode === 39)  // right arrow
         {
-            gameBoard.friesMan.currDir = EAST;
+            if(modelViewIndex === 0 || modelViewIndex === 2)
+                gameBoard.friesMan.nextDir = EAST;
+            else
+                gameBoard.friesMan.nextDir = (gameBoard.friesMan.currDir+1)%4;
         }
         else if (input.keyCode === 40)  // down arrow
         {
-            gameBoard.friesMan.currDir = SOUTH;
+            if(modelViewIndex === 0 || modelViewIndex === 2)
+                gameBoard.friesMan.nextDir = SOUTH;
+            else
+                gameBoard.friesMan.nextDir = (gameBoard.friesMan.currDir+2)%4;
         }
         else if (input.keyCode === 37)  // left arrow
         {
-            gameBoard.friesMan.currDir = WEST;
+            if(modelViewIndex === 0 || modelViewIndex === 2)
+                gameBoard.friesMan.nextDir = WEST;
+            else
+                gameBoard.friesMan.nextDir = (gameBoard.friesMan.currDir+3)%4;
         }
         else if (input.keyCode === 90)  // z key
         {
-            // gameBoard.move(MOVE_FRIESMAN, 0);
-
-            // for (var i = 0; i < 4; i++)
-            // {
-            //     gameBoard.move(MOVE_ENEMY, i);
-            //     gameBoard.display();
-            // }
-            // MOVED++;
+            modelViewIndex = (modelViewIndex+1) % 3
         }
 
     }
@@ -128,9 +131,11 @@ window.onload = function init()
     var mPerspectiveLoc = gl.getUniformLocation(program, "mPerspective");
     gl.uniformMatrix4fv(mPerspectiveLoc, false, new flatten(mPerspective));
 
-    mTurningLoc = gl.getUniformLocation(program, "mTurning");
+    mModelViewLoc = gl.getUniformLocation(program, "mModelView");
 
     mTranslationLoc = gl.getUniformLocation(program, "mTranslation");
+
+    mHeadingLoc = gl.getUniformLocation(program, "mHeading");
 
     mScaleLoc = gl.getUniformLocation(program, "mScale");
 
@@ -139,6 +144,38 @@ window.onload = function init()
     render();
 
 };
+
+function getModelView(index)
+{
+    if(index === 0)
+        return mat4();
+    else if(index === 1)
+    {
+        var xAmount = gameBoard.prevFriesMan.x + (gameBoard.friesMan.x - gameBoard.prevFriesMan.x) * timer / 10;
+        var yAmount = gameBoard.prevFriesMan.y + (gameBoard.friesMan.y - gameBoard.prevFriesMan.y) * timer / 10;
+        var reverseTranslation = mult(translate(-xAmount, -yAmount, 0.0), translate(10-xaxis, 10-yaxis, 20-zaxis));
+        return mult(getHeading(gameBoard.friesMan.currDir), reverseTranslation);
+    }
+    else if(index === 2)
+    {
+        var xAmount = gameBoard.prevFriesMan.x + (gameBoard.friesMan.x - gameBoard.prevFriesMan.x) * timer / 10;
+        var yAmount = gameBoard.prevFriesMan.y + (gameBoard.friesMan.y - gameBoard.prevFriesMan.y) * timer / 10;
+        var reverseTranslation = mult(translate(-xAmount, -yAmount, 0.0), translate(10-xaxis, 10-yaxis, 20-zaxis));
+        return mult(mult(rotate(-20, vec3(1,0,0)), translate(0, 2, -5)), reverseTranslation);
+    }
+}
+
+function getHeading(dir)
+{
+    if(dir === NORTH)
+        return rotate(-90, vec3(1,0,0));
+    if(dir === SOUTH)
+        return mult(rotate(180, vec3(0,1,0)), rotate(-90, vec3(1,0,0)));
+    if(dir === EAST)
+        return mult(rotate(90, vec3(0,1,0)), rotate(-90, vec3(1,0,0)));
+    if(dir === WEST)
+        return mult(rotate(-90, vec3(0,1,0)), rotate(-90, vec3(1,0,0)));
+}
 
 function render() 
 {
@@ -157,15 +194,15 @@ function render()
         timer = 0;
     }
 
-    var Turn = rotate(TurnAngle, vec3(0,1,0));
-    gl.uniformMatrix4fv(mTurningLoc, false, new flatten(Turn));
+    gl.uniformMatrix4fv(mModelViewLoc, false, new flatten(getModelView(modelViewIndex)));
 
     // render cubes (maze)
     for(var k = 0; k < walls.length; k++)
     {
-        translateM = mult( translate(-10+xaxis, -10+yaxis, -30+zaxis), translate(walls[k]) );
+        translateM = mult( translate(-10+xaxis, -10+yaxis, -20+zaxis), translate(walls[k]) );
         gl.uniformMatrix4fv(mTranslationLoc, false, new flatten(translateM));
 
+        gl.uniformMatrix4fv(mHeadingLoc, false, new flatten(mat4()));
         gl.uniformMatrix4fv(mScaleLoc, false, new flatten(mat4()));
 
         gl.uniform1i(objectIDLoc, 0);
@@ -179,9 +216,10 @@ function render()
         {
             if (gameBoard.mapArray[y][x] === ROAD_KETCHUP)
             {
-                translateM = mult( translate(-10+xaxis, -10+yaxis, -30+zaxis), translate(x*cellSize, y*cellSize, 0.0) );
+                translateM = mult( translate(-10+xaxis, -10+yaxis, -20+zaxis), translate(x*cellSize, y*cellSize, 0.0) );
                 gl.uniformMatrix4fv(mTranslationLoc, false, new flatten(translateM));
 
+                gl.uniformMatrix4fv(mHeadingLoc, false, new flatten(mat4()));
                 gl.uniformMatrix4fv(mScaleLoc, false, new flatten(scale(0.15, 0.15, 0.15)));
 
                 gl.uniform1i(objectIDLoc, 1);
@@ -193,8 +231,9 @@ function render()
     // render friesman
     var xAmount = gameBoard.prevFriesMan.x + (gameBoard.friesMan.x - gameBoard.prevFriesMan.x) * timer / 10;
     var yAmount = gameBoard.prevFriesMan.y + (gameBoard.friesMan.y - gameBoard.prevFriesMan.y) * timer / 10;
-    translateM = mult( translate(-10+xaxis, -10+yaxis, -30+zaxis), translate(xAmount, yAmount, 0.0) );
+    translateM = mult( translate(-10+xaxis, -10+yaxis, -20+zaxis), translate(xAmount, yAmount, 0.0) );
     gl.uniformMatrix4fv(mTranslationLoc, false, new flatten(translateM));
+    gl.uniformMatrix4fv(mHeadingLoc, false, new flatten(getHeading(gameBoard.friesMan.currDir)));
     gl.uniformMatrix4fv(mScaleLoc, false, new flatten(scale(0.5, 0.5, 0.5)));
     gl.uniform1i(objectIDLoc, 2);
     gl.drawArrays( gl.TRIANGLES, num_cube_points+num_sphere_points, num_friesman_points);
@@ -204,8 +243,9 @@ function render()
     {
         var xAmount = gameBoard.prevEnemyArray[i].x + (gameBoard.enemyArray[i].x - gameBoard.prevEnemyArray[i].x) * timer / 10;
         var yAmount = gameBoard.prevEnemyArray[i].y + (gameBoard.enemyArray[i].y - gameBoard.prevEnemyArray[i].y) * timer / 10;
-        translateM = mult( translate(-10+xaxis, -10+yaxis, -30+zaxis), translate(xAmount, yAmount, 0.0) );
+        translateM = mult( translate(-10+xaxis, -10+yaxis, -20+zaxis), translate(xAmount, yAmount, 0.0) );
         gl.uniformMatrix4fv(mTranslationLoc, false, new flatten(translateM));
+        gl.uniformMatrix4fv(mHeadingLoc, false, new flatten(mat4()));
         gl.uniformMatrix4fv(mScaleLoc, false, new flatten(scale(0.3, 0.3, 0.3)));
         gl.uniform1i(objectIDLoc, 3);
         gl.drawArrays( gl.TRIANGLE_STRIP, num_cube_points+num_sphere_points+num_friesman_points, num_ring_points);        

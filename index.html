@@ -9,8 +9,9 @@
 attribute vec4 vPosition;
 uniform mat4 mPerspective;
 uniform mat4 mTranslation;
-uniform mat4 mTurning;
+uniform mat4 mModelView;
 uniform mat4 mScale;
+uniform mat4 mHeading;
 
 // varying vec2 fTexCoord;
 
@@ -18,7 +19,7 @@ void
 main()
 {
 	// fTexCoord = (vTexCoord).xy;
-    gl_Position = mPerspective * mTurning * mTranslation * mScale * vPosition;
+    gl_Position = mPerspective * mModelView * mTranslation * mHeading * mScale * vPosition;
 }
 </script>
 
@@ -62,7 +63,7 @@ main()
 <script type="text/javascript" src="cube.js"></script>
 
 <body>
-<canvas id="gl-canvas" width="960" height="540">
+<canvas id="gl-canvas" width="720" height="540">
 Oops ... your browser doesn't support the HTML5 canvas element
 </canvas>
 </body>
