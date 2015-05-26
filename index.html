@@ -7,11 +7,14 @@
 
 <script id="vertex-shader" type="x-shader/x-vertex">
 attribute vec4 vPosition;
+attribute vec4 vNormal;
+
 uniform mat4 mPerspective;
-uniform mat4 mTranslation;
 uniform mat4 mModelView;
-uniform mat4 mScale;
-uniform mat4 mHeading;
+uniform mat4 mObjToWorld;
+uniform mat3 mNormal;	// normal matrix (inverse of M transpose)
+
+varying vec3 N, L, E;		// these vectors will be interpolated and sent to fragment shader (for Phong shading)
 
 // varying vec2 fTexCoord;
 
@@ -19,7 +22,14 @@ void
 main()
 {
 	// fTexCoord = (vTexCoord).xy;
-    gl_Position = mPerspective * mModelView * mTranslation * mHeading * mScale * vPosition;
+	vec3 pos = (mModelView * mObjToWorld * vPosition).xyz;
+	vec3 light = (mModelView * vec4(10.0, 10.0, 3.0, 1.0)).xyz;
+
+	L = normalize(light - pos);					// 	unit vector in the direction of the light source
+	E = -normalize(pos);						//	normalized vector in the direction of the viewer
+	N = normalize(mNormal * vNormal.xyz);	//	unit normal
+
+    gl_Position = mPerspective * mModelView * mObjToWorld * vPosition;
 }
 </script>
 
@@ -35,18 +45,43 @@ uniform int objectID;
 // varying vec2 fTexCoord;
 // uniform sampler2D texture;
 
+varying vec3 N, L, E;
+// uniform vec4 ambientProduct, diffuseProduct, specularProduct;
+// uniform float shininess;
+
 void
 main()
 {
+	vec4 objColor;
 	if(objectID == 0)
-		gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);
+		objColor = vec4(0.0, 0.0, 1.0, 1.0);
 	if(objectID == 1)
-		gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+		objColor = vec4(1.0, 0.0, 0.0, 1.0);
 	if(objectID == 2)
 		// gl_FragColor = texture2D( texture, fTexCoord );
-		gl_FragColor = vec4(1.0, 1.0, 0.0, 1.0);
+		objColor = vec4(1.0, 1.0, 0.0, 1.0);
 	if(objectID == 3)
-		gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
+		objColor = vec4(0.0, 1.0, 0.0, 1.0);
+
+	float shininess = 10.0;
+	vec4 ambientProduct = objColor * vec4(0.5, 0.5, 0.5, 1.0);;
+	vec4 diffuseProduct = objColor * vec4(0.5, 0.5, 0.5, 1.0);
+	vec4 specularProduct = vec4(1.0, 1.0, 1.0, 1.0);
+	vec4 fColor;
+	vec3 H = normalize(L + E);				// halfway vector
+	vec4 ambient = ambientProduct;			// ambient term
+	float Kd = max(dot(L,N), 0.0);
+	vec4 diffuse = Kd * diffuseProduct;		// diffuse term
+	float Ks = pow(max(dot(N,H), 0.0), shininess);
+	vec4 specular = Ks * specularProduct;	// specular term
+	if(dot(L,N) < 0.0) {
+		specular = vec4(0.0, 0.0, 0.0, 1.0);
+	}
+
+	fColor = ambient + diffuse + specular;
+	fColor.a = 1.0;
+	gl_FragColor = fColor;
+
 }
 </script>
 

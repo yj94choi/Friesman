@@ -638,6 +638,30 @@ function flatten( v )
     return floats;
 }
 
+function mat4To3(M){
+    var newM = mat3();
+    for(var i = 0; i < 3; i++)
+        newM[i] = vec3(M[i]);
+    return newM;
+}
+
+// find the inverse of a matrix
+// assuming M is 3x3
+function inverse(M) {
+    var a=M[0][0], b=M[0][1], c=M[0][2];
+    var d=M[1][0], e=M[1][1], f=M[1][2];
+    var g=M[2][0], h=M[2][1], i=M[2][2];
+    var det1 = a * (e*i - f*h);
+    var det2 = b * (f*g - d*i);
+    var det3= c * (d*h - e*g);
+    var det = det1 + det2 + det3;
+    var coeff = 1 / det;
+    var row1 = vec3(coeff * (e*i - f*h), coeff * (c*h - b*i), coeff * (b*f - c*e));
+    var row2 = vec3(coeff * (f*g - d*i), coeff * (a*i - c*g), coeff * (c*d - a*f));
+    var row3 = vec3(coeff * (d*h - e*g), coeff * (b*g - a*h), coeff * (a*e - b*d));
+    return mat3(row1, row2, row3);
+}
+
 //----------------------------------------------------------------------------
 
 var sizeof = {

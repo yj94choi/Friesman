@@ -1,19 +1,17 @@
 var gl;
 var points = [];
 var normals = [];
-var texCoordsArray = [];
+var texCoords = [];
 
 var canvas;
 var program;
-var translateM;
-var xaxis = 0;
-var yaxis = 0;
-var zaxis = 0;
+var objToWorldM;
+var modelViewM;
 var AngleRotation = 0;
 var modelViewIndex = 0;
 var mModelViewLoc;
 var mTranslationLoc;
-var mHeadingLoc;
+var mObjToWorldLoc;
 
 var gameBoard;
 var field;
@@ -62,21 +60,7 @@ window.onload = function init()
 
     window.onkeydown = function(input)
     {
-        if(input.keyCode ==74) //when pressed j
-            xaxis += 0.25;
-        else if(input.keyCode ==75) //when pressed k
-            xaxis -= 0.25;
-        else if(input.keyCode ==73) //when pressed i
-            zaxis += 0.25;
-        else if(input.keyCode ==77) //when pressed m
-            zaxis -= 0.25;
-        else if(input.keyCode ==82) //when pressed r
-        {
-            yaxis = 0;
-            xaxis = 0;
-            zaxis = 0;
-        }
-        else if (input.keyCode === 38)   // up arrow
+        if (input.keyCode === 38)   // up arrow
         {
             if(modelViewIndex === 0 || modelViewIndex === 2)
                 gameBoard.friesMan.nextDir = NORTH;
@@ -126,20 +110,23 @@ window.onload = function init()
     gl.vertexAttribPointer( vPosition, 4, gl.FLOAT, false, 0, 0 );
     gl.enableVertexAttribArray( vPosition );
 
+    // normal buffer
+    var nBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, nBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(normals), gl.STATIC_DRAW);
+    var vNormal = gl.getAttribLocation(program, "vNormal");
+    gl.vertexAttribPointer(vNormal, 4, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(vNormal);
+
     // set mPerspective
     var mPerspective = perspective( 60, canvas.width/canvas.height, 1, 1000);
     var mPerspectiveLoc = gl.getUniformLocation(program, "mPerspective");
     gl.uniformMatrix4fv(mPerspectiveLoc, false, new flatten(mPerspective));
 
     mModelViewLoc = gl.getUniformLocation(program, "mModelView");
-
-    mTranslationLoc = gl.getUniformLocation(program, "mTranslation");
-
-    mHeadingLoc = gl.getUniformLocation(program, "mHeading");
-
-    mScaleLoc = gl.getUniformLocation(program, "mScale");
-
+    mObjToWorldLoc = gl.getUniformLocation(program, "mObjToWorld");
     objectIDLoc = gl.getUniformLocation(program, "objectID");
+    mNormalLoc = gl.getUniformLocation(program, "mNormal");  // normal matrix to be used in vertex shader for shading
 
     render();
 
@@ -148,19 +135,19 @@ window.onload = function init()
 function getModelView(index)
 {
     if(index === 0)
-        return mat4();
+        return translate(-10, -10, -20);
     else if(index === 1)
     {
         var xAmount = gameBoard.prevFriesMan.x + (gameBoard.friesMan.x - gameBoard.prevFriesMan.x) * timer / 10;
         var yAmount = gameBoard.prevFriesMan.y + (gameBoard.friesMan.y - gameBoard.prevFriesMan.y) * timer / 10;
-        var reverseTranslation = mult(translate(-xAmount, -yAmount, 0.0), translate(10-xaxis, 10-yaxis, 20-zaxis));
+        var reverseTranslation = translate(-xAmount, -yAmount, 0.0);
         return mult(getHeading(gameBoard.friesMan.currDir), reverseTranslation);
     }
     else if(index === 2)
     {
         var xAmount = gameBoard.prevFriesMan.x + (gameBoard.friesMan.x - gameBoard.prevFriesMan.x) * timer / 10;
         var yAmount = gameBoard.prevFriesMan.y + (gameBoard.friesMan.y - gameBoard.prevFriesMan.y) * timer / 10;
-        var reverseTranslation = mult(translate(-xAmount, -yAmount, 0.0), translate(10-xaxis, 10-yaxis, 20-zaxis));
+        var reverseTranslation = translate(-xAmount, -yAmount, 0.0);
         return mult(mult(rotate(-20, vec3(1,0,0)), translate(0, 2, -5)), reverseTranslation);
     }
 }
@@ -194,33 +181,29 @@ function render()
         timer = 0;
     }
 
-    gl.uniformMatrix4fv(mModelViewLoc, false, new flatten(getModelView(modelViewIndex)));
-
+    modelViewM = getModelView(modelViewIndex);
+    gl.uniformMatrix4fv(mModelViewLoc, false, new flatten(modelViewM));
+    gl.uniformMatrix3fv(mNormalLoc, false, new flatten(mat4To3(modelViewM)));
+    
     // render cubes (maze)
     for(var k = 0; k < walls.length; k++)
     {
-        translateM = mult( translate(-10+xaxis, -10+yaxis, -20+zaxis), translate(walls[k]) );
-        gl.uniformMatrix4fv(mTranslationLoc, false, new flatten(translateM));
-
-        gl.uniformMatrix4fv(mHeadingLoc, false, new flatten(mat4()));
-        gl.uniformMatrix4fv(mScaleLoc, false, new flatten(mat4()));
-
+        objToWorldM = translate(walls[k]);
+        gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
+        
         gl.uniform1i(objectIDLoc, 0);
         gl.drawArrays( gl.TRIANGLE_STRIP, 0, num_cube_points);
     }
 
     // render spheres (ketchup dots)
-    for ( var x = 0; x < 21; x++)
+    for ( var x = 2; x < 19; x++)
     {
-        for ( var y = 0; y < 21; y++)
+        for ( var y = 1; y < 20; y++)
         {
             if (gameBoard.mapArray[y][x] === ROAD_KETCHUP)
             {
-                translateM = mult( translate(-10+xaxis, -10+yaxis, -20+zaxis), translate(x*cellSize, y*cellSize, 0.0) );
-                gl.uniformMatrix4fv(mTranslationLoc, false, new flatten(translateM));
-
-                gl.uniformMatrix4fv(mHeadingLoc, false, new flatten(mat4()));
-                gl.uniformMatrix4fv(mScaleLoc, false, new flatten(scale(0.15, 0.15, 0.15)));
+                objToWorldM = mult(translate(x*cellSize, y*cellSize, 0.0), scale(0.15, 0.15, 0.15));
+                gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
 
                 gl.uniform1i(objectIDLoc, 1);
                 gl.drawArrays(gl.TRIANGLES, num_cube_points, num_sphere_points);
@@ -242,10 +225,10 @@ function render()
         var xAmount = gameBoard.prevFriesMan.x + (gameBoard.friesMan.x - gameBoard.prevFriesMan.x) * timer / 10;
         var yAmount = gameBoard.prevFriesMan.y + (gameBoard.friesMan.y - gameBoard.prevFriesMan.y) * timer / 10;
     }
-    translateM = mult( translate(-10+xaxis, -10+yaxis, -20+zaxis), translate(xAmount, yAmount, 0.0) );
-    gl.uniformMatrix4fv(mTranslationLoc, false, new flatten(translateM));
-    gl.uniformMatrix4fv(mHeadingLoc, false, new flatten(getHeading(gameBoard.friesMan.currDir)));
-    gl.uniformMatrix4fv(mScaleLoc, false, new flatten(scale(0.5, 0.5, 0.5)));
+    objToWorldM = scale(0.5, 0.5, 0.5);
+    // objToWorldM = mult(getHeading(gameBoard.friesMan.currDir), objToWorldM);
+    objToWorldM = mult(translate(xAmount, yAmount, 0.0), objToWorldM);
+    gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
     gl.uniform1i(objectIDLoc, 2);
     gl.drawArrays( gl.TRIANGLES, num_cube_points+num_sphere_points, num_friesman_points);
 
@@ -254,10 +237,8 @@ function render()
     {
         var xAmount = gameBoard.prevEnemyArray[i].x + (gameBoard.enemyArray[i].x - gameBoard.prevEnemyArray[i].x) * timer / 10;
         var yAmount = gameBoard.prevEnemyArray[i].y + (gameBoard.enemyArray[i].y - gameBoard.prevEnemyArray[i].y) * timer / 10;
-        translateM = mult( translate(-10+xaxis, -10+yaxis, -20+zaxis), translate(xAmount, yAmount, 0.0) );
-        gl.uniformMatrix4fv(mTranslationLoc, false, new flatten(translateM));
-        gl.uniformMatrix4fv(mHeadingLoc, false, new flatten(mat4()));
-        gl.uniformMatrix4fv(mScaleLoc, false, new flatten(scale(0.3, 0.3, 0.3)));
+        objToWorldM = mult(translate(xAmount, yAmount, 0.0), scale(0.3, 0.3, 0.3));
+        gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
         gl.uniform1i(objectIDLoc, 3);
         gl.drawArrays( gl.TRIANGLE_STRIP, num_cube_points+num_sphere_points+num_friesman_points, num_ring_points);        
     }
