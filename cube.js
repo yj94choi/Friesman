@@ -20,27 +20,27 @@ var texCoord = [
 // push points and texture coordinates for a quadrilateral
 function quad(a, b, c, d) {
     points.push(cubeVertices[a]);
-    normals.push(normalize(cubeVertices[a], true));
+    normals.push(normalize(cubeVertices[a].slice(), true));
     texCoords.push(texCoord[2]);
 
     points.push(cubeVertices[b]); 
-    normals.push(normalize(cubeVertices[b], true));
+    normals.push(normalize(cubeVertices[b].slice(), true));
     texCoords.push(texCoord[3]); 
 
     points.push(cubeVertices[c]); 
-    normals.push(normalize(cubeVertices[c], true));
+    normals.push(normalize(cubeVertices[c].slice(), true));
     texCoords.push(texCoord[0]); 
    
     points.push(cubeVertices[a]); 
-    normals.push(normalize(cubeVertices[a], true));
+    normals.push(normalize(cubeVertices[a].slice(), true));
     texCoords.push(texCoord[2]); 
 
     points.push(cubeVertices[c]); 
-    normals.push(normalize(cubeVertices[c], true));
+    normals.push(normalize(cubeVertices[c].slice(), true));
     texCoords.push(texCoord[0]); 
 
     points.push(cubeVertices[d]); 
-    normals.push(normalize(cubeVertices[d], true));
+    normals.push(normalize(cubeVertices[d].slice(), true));
     texCoords.push(texCoord[1]);   
 }
 

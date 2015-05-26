@@ -23,7 +23,7 @@ main()
 {
 	// fTexCoord = (vTexCoord).xy;
 	vec3 pos = (mModelView * mObjToWorld * vPosition).xyz;
-	vec3 light = (mModelView * vec4(10.0, 10.0, 3.0, 1.0)).xyz;
+	vec3 light = (mModelView * vec4(10.0, 10.0, 2.0, 1.0)).xyz;
 
 	L = normalize(light - pos);					// 	unit vector in the direction of the light source
 	E = -normalize(pos);						//	normalized vector in the direction of the viewer
@@ -62,6 +62,10 @@ main()
 		objColor = vec4(1.0, 1.0, 0.0, 1.0);
 	if(objectID == 3)
 		objColor = vec4(0.0, 1.0, 0.0, 1.0);
+	if(objectID == 4)
+		objColor = vec4(0.6, 0.2, 0.2, 1.0);
+	if(objectID == 5)
+		objColor = vec4(1.0, 0.0, 0.0, 1.0);
 
 	float shininess = 10.0;
 	vec4 ambientProduct = objColor * vec4(0.5, 0.5, 0.5, 1.0);;
@@ -96,6 +100,7 @@ main()
 <script type="text/javascript" src="ring.js"></script>
 <script type="text/javascript" src="ketchupdot.js"></script>
 <script type="text/javascript" src="cube.js"></script>
+<script type="text/javascript" src="torch.js"></script>
 
 <body>
 <canvas id="gl-canvas" width="720" height="540">

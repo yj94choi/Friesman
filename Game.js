@@ -26,6 +26,8 @@ var num_cube_points = 0;
 var num_sphere_points = 0;
 var num_friesman_points = 0;
 var num_ring_points = 0;
+var num_stick_points = 0;
+var num_fire_points = 0;
 
 var timer = 0;
 
@@ -57,6 +59,10 @@ window.onload = function init()
     num_friesman_points = points.length - num_sphere_points - num_cube_points;
     makeTorus(0.7, 0.3, 100, 20, 1.0);
     num_ring_points = points.length - num_friesman_points - num_sphere_points - num_cube_points;
+    cube2(stickVertices);
+    num_stick_points = points.length - num_ring_points - num_friesman_points - num_sphere_points - num_cube_points;
+    cube2(fireVertices);
+    num_fire_points = points.length - num_stick_points - num_ring_points - num_friesman_points - num_sphere_points - num_cube_points;
 
     window.onkeydown = function(input)
     {
@@ -177,6 +183,7 @@ function render()
         {
             gameBoard.move(MOVE_ENEMY, i);
         }
+        if(MOVED < 20)
         MOVED++;
         timer = 0;
     }
@@ -242,6 +249,18 @@ function render()
         gl.uniform1i(objectIDLoc, 3);
         gl.drawArrays( gl.TRIANGLE_STRIP, num_cube_points+num_sphere_points+num_friesman_points, num_ring_points);        
     }
+
+    // render stick
+    objToWorldM = mult(translate(10, 10, 1), rotate(90, vec3(1,0,0)));
+    gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
+    gl.uniform1i(objectIDLoc, 4);
+    gl.drawArrays(gl.TRIANGLES, num_cube_points+num_sphere_points+num_friesman_points+num_ring_points, num_stick_points);
+
+    // render fire
+    objToWorldM = translate(10, 10, 1.5);
+    gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
+    gl.uniform1i(objectIDLoc, 5);
+    gl.drawArrays(gl.TRIANGLES, num_cube_points+num_sphere_points+num_friesman_points+num_ring_points+num_stick_points, num_fire_points);
 
     timer++;
     window.requestAnimFrame(render);
