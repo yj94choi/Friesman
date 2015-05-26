@@ -93,8 +93,12 @@ Board.prototype.move = function(type, number)
 
 			if(dir === NORTH || dir === SOUTH)
 				var nextX = currX;
+			else if(dir === EAST && currX === 20 && currY === 11)
+				var nextX = 0;
 			else if(dir === EAST)
 				var nextX = currX + 1;
+			else if(dir === WEST && currX === 0 && currY === 11)
+				var nextX = 20;
 			else if(dir === WEST)
 				var nextX = currX - 1;
 
@@ -405,17 +409,29 @@ Board.prototype.move = function(type, number)
 
 			if(nextY >= 0 && nextY <= 20 && nextX >= 0 && nextX <= 20)
 			{
-				if(this.mapArray[nextY][nextX] === ROAD_KETCHUP || this.mapArray[nextY][nextX] === ROAD_EMPTY || (this.mapArray[nextY][nextX] === 'd' && !this.enemyArray[number].passedDoor))
+				if(isEnemy(this.mapArray[nextY][nextX]))
+				{
+					this.mapArray[currY][currX] = this.prevState[number];
+					var prevEnemy = parseInt(this.mapArray[nextY][nextX]);
+					this.prevState[number] = this.prevState[prevEnemy];
+					this.prevState[prevEnemy] = currChar;
+					this.enemyArray[number].x += (nextX - currX);
+					this.enemyArray[number].y += (nextY - currY);
+					repeat = false;
+				}
+				else if(this.mapArray[nextY][nextX] === ROAD_KETCHUP || this.mapArray[nextY][nextX] === ROAD_EMPTY || (this.mapArray[nextY][nextX] === 'd' && !this.enemyArray[number].passedDoor))
 				{
 					// if(number === 1)
 					// 	console.log("passedDoor: " + this.enemyArray[number].passedDoor.toString());
 					if(this.mapArray[nextY][nextX] === 'd')
-						this.enemyArray[number].passedDoor = true;		
+						this.enemyArray[number].passedDoor = true;
+			
 					this.mapArray[currY][currX] = this.prevState[number];
 					this.prevState[number] = this.mapArray[nextY][nextX];
 					this.mapArray[nextY][nextX] = currChar;
 					this.enemyArray[number].x += (nextX - currX);
 					this.enemyArray[number].y += (nextY - currY);
+					
 					repeat = false;
 				}
 				else if(this.mapArray[nextY][nextX] === 'F')		// enemy has killed Friesman
@@ -441,4 +457,11 @@ Board.prototype.move = function(type, number)
 			}
 		} while(repeat)
 	}
+}
+
+function isEnemy(enemy)
+{
+	if (enemy === '0' || enemy === '1' || enemy === '2' || enemy === '3')
+		return true;
+	return false;
 }
