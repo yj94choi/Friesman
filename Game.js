@@ -229,8 +229,19 @@ function render()
     }
 
     // render friesman
-    var xAmount = gameBoard.prevFriesMan.x + (gameBoard.friesMan.x - gameBoard.prevFriesMan.x) * timer / 10;
-    var yAmount = gameBoard.prevFriesMan.y + (gameBoard.friesMan.y - gameBoard.prevFriesMan.y) * timer / 10;
+    if(gameBoard.prevFriesMan.x === 0 || gameBoard.prevFriesMan.x === 20)
+    {
+        if(gameBoard.friesMan.currDir === WEST)
+            var xAmount = gameBoard.prevFriesMan.x - timer/10;
+        else if(gameBoard.friesMan.currDir === EAST)
+            var xAmount = gameBoard.prevFriesMan.x + timer/10;
+        var yAmount = gameBoard.prevFriesMan.y;
+    }
+    else
+    {
+        var xAmount = gameBoard.prevFriesMan.x + (gameBoard.friesMan.x - gameBoard.prevFriesMan.x) * timer / 10;
+        var yAmount = gameBoard.prevFriesMan.y + (gameBoard.friesMan.y - gameBoard.prevFriesMan.y) * timer / 10;
+    }
     translateM = mult( translate(-10+xaxis, -10+yaxis, -20+zaxis), translate(xAmount, yAmount, 0.0) );
     gl.uniformMatrix4fv(mTranslationLoc, false, new flatten(translateM));
     gl.uniformMatrix4fv(mHeadingLoc, false, new flatten(getHeading(gameBoard.friesMan.currDir)));
