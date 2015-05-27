@@ -16,7 +16,8 @@ uniform mat3 mNormal;	// normal matrix (inverse of M transpose)
 
 varying vec3 N, L, E;		// these vectors will be interpolated and sent to fragment shader (for Phong shading)
 
-// varying vec2 fTexCoord;
+attribute vec4 vTexCoord;	// texture coordinate
+varying vec2 fTexCoord;		// texture coordinate to be interpolated
 
 void
 main()
@@ -29,6 +30,7 @@ main()
 	E = -normalize(pos);						//	normalized vector in the direction of the viewer
 	N = normalize(mNormal * vNormal.xyz);	//	unit normal
 
+	fTexCoord = vTexCoord.xy;	
     gl_Position = mPerspective * mModelView * mObjToWorld * vPosition;
 }
 </script>
@@ -42,8 +44,9 @@ precision mediump float;
 // id 3 : enemies (green)
 uniform int objectID;
 
-// varying vec2 fTexCoord;
-// uniform sampler2D texture;
+varying vec2 fTexCoord;		// interpolated texture coordinate values
+uniform sampler2D texture0;	// texture 0: fire
+uniform sampler2D texture1;
 
 varying vec3 N, L, E;
 // uniform vec4 ambientProduct, diffuseProduct, specularProduct;
@@ -54,7 +57,7 @@ main()
 {
 	vec4 objColor;
 	if(objectID == 0)
-		objColor = vec4(0.0, 0.0, 1.0, 1.0);
+		objColor = texture2D(texture1, fTexCoord);
 	if(objectID == 1)
 		objColor = vec4(1.0, 0.0, 0.0, 1.0);
 	if(objectID == 2)
@@ -65,7 +68,7 @@ main()
 	if(objectID == 4)
 		objColor = vec4(0.6, 0.2, 0.2, 1.0);
 	if(objectID == 5)
-		objColor = vec4(1.0, 0.0, 0.0, 1.0);
+		objColor = texture2D(texture0, fTexCoord);
 
 	float shininess = 10.0;
 	vec4 ambientProduct = objColor * vec4(0.5, 0.5, 0.5, 1.0);;
@@ -101,6 +104,9 @@ main()
 <script type="text/javascript" src="ketchupdot.js"></script>
 <script type="text/javascript" src="cube.js"></script>
 <script type="text/javascript" src="torch.js"></script>
+
+<img id="fire" src="fire2.jpeg" hidden></img>
+<img id="brick" src="stonebrick.jpeg" hidden></img>
 
 <body>
 <canvas id="gl-canvas" width="720" height="540">

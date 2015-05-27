@@ -31,6 +31,8 @@ var num_fire_points = 0;
 
 var timer = 0;
 
+var vTexCoord;
+
 window.onload = function init()
 {
     canvas = document.getElementById( "gl-canvas" );
@@ -51,18 +53,19 @@ window.onload = function init()
         }
     }
 
-    cube();
-    num_cube_points = points.length;
-    ketchupdot(3, false);
-    num_sphere_points = points.length - num_cube_points;
-    friesman();
-    num_friesman_points = points.length - num_sphere_points - num_cube_points;
-    makeTorus(0.7, 0.3, 100, 20, 1.0);
-    num_ring_points = points.length - num_friesman_points - num_sphere_points - num_cube_points;
-    cube2(stickVertices);
-    num_stick_points = points.length - num_ring_points - num_friesman_points - num_sphere_points - num_cube_points;
     cube2(fireVertices);
-    num_fire_points = points.length - num_stick_points - num_ring_points - num_friesman_points - num_sphere_points - num_cube_points;
+    num_fire_points = points.length;
+    temp = texCoords.slice();
+    cube();
+    num_cube_points = points.length - num_fire_points;
+    ketchupdot(3, false);
+    num_sphere_points = points.length - num_fire_points - num_cube_points;
+    friesman();
+    num_friesman_points = points.length - num_fire_points - num_sphere_points - num_cube_points;
+    makeTorus(0.7, 0.3, 100, 20, 1.0);
+    num_ring_points = points.length - num_fire_points - num_friesman_points - num_sphere_points - num_cube_points;
+    cube2(stickVertices);
+    num_stick_points = points.length - num_fire_points - num_ring_points - num_friesman_points - num_sphere_points - num_cube_points;
 
     window.onkeydown = function(input)
     {
@@ -123,6 +126,34 @@ window.onload = function init()
     var vNormal = gl.getAttribLocation(program, "vNormal");
     gl.vertexAttribPointer(vNormal, 4, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(vNormal);
+
+    // bind vTexCoord to texCoords array
+    var tBuffer = gl.createBuffer();
+    gl.bindBuffer( gl.ARRAY_BUFFER, tBuffer );
+    gl.bufferData( gl.ARRAY_BUFFER, flatten(texCoords), gl.STATIC_DRAW );
+    vTexCoord = gl.getAttribLocation( program, "vTexCoord" );
+    gl.vertexAttribPointer( vTexCoord, 4, gl.FLOAT, false, 0, 0 );
+    gl.disableVertexAttribArray( vTexCoord );
+
+    var image0 = document.getElementById("fire");
+    texture0 = gl.createTexture();
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture( gl.TEXTURE_2D, texture0 );
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image0 );
+    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );   // use nearest neighbor filtering
+    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
+    gl.uniform1i(gl.getUniformLocation(program, "texture0"), 0);
+
+    var image1 = document.getElementById("brick");
+    texture1 = gl.createTexture();
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture( gl.TEXTURE_2D, texture1 );
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image1 );
+    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );  // use trilinear filtering
+    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
+    gl.uniform1i(gl.getUniformLocation(program, "texture1"), 1);
 
     // set mPerspective
     var mPerspective = perspective( 60, canvas.width/canvas.height, 1, 1000);
@@ -192,6 +223,13 @@ function render()
     gl.uniformMatrix4fv(mModelViewLoc, false, new flatten(modelViewM));
     gl.uniformMatrix3fv(mNormalLoc, false, new flatten(mat4To3(modelViewM)));
     
+    // render fire
+    gl.enableVertexAttribArray( vTexCoord );
+    objToWorldM = translate(10, 10, 1.5);
+    gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
+    gl.uniform1i(objectIDLoc, 5);
+    gl.drawArrays(gl.TRIANGLES, 0, num_fire_points);
+
     // render cubes (maze)
     for(var k = 0; k < walls.length; k++)
     {
@@ -199,8 +237,10 @@ function render()
         gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
         
         gl.uniform1i(objectIDLoc, 0);
-        gl.drawArrays( gl.TRIANGLE_STRIP, 0, num_cube_points);
+        gl.drawArrays( gl.TRIANGLE_STRIP, num_fire_points, num_cube_points);
     }
+    gl.disableVertexAttribArray( vTexCoord );
+
 
     // render spheres (ketchup dots)
     for ( var x = 2; x < 19; x++)
@@ -213,7 +253,7 @@ function render()
                 gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
 
                 gl.uniform1i(objectIDLoc, 1);
-                gl.drawArrays(gl.TRIANGLES, num_cube_points, num_sphere_points);
+                gl.drawArrays(gl.TRIANGLES, num_fire_points+num_cube_points, num_sphere_points);
             }
         }
     }
@@ -237,7 +277,7 @@ function render()
     objToWorldM = mult(translate(xAmount, yAmount, 0.0), objToWorldM);
     gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
     gl.uniform1i(objectIDLoc, 2);
-    gl.drawArrays( gl.TRIANGLES, num_cube_points+num_sphere_points, num_friesman_points);
+    gl.drawArrays( gl.TRIANGLES, num_fire_points+num_cube_points+num_sphere_points, num_friesman_points);
 
     // render enemies
     for(var i = 0; i < 4; i++)
@@ -247,20 +287,14 @@ function render()
         objToWorldM = mult(translate(xAmount, yAmount, 0.0), scale(0.3, 0.3, 0.3));
         gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
         gl.uniform1i(objectIDLoc, 3);
-        gl.drawArrays( gl.TRIANGLE_STRIP, num_cube_points+num_sphere_points+num_friesman_points, num_ring_points);        
+        gl.drawArrays( gl.TRIANGLE_STRIP, num_fire_points+num_cube_points+num_sphere_points+num_friesman_points, num_ring_points);        
     }
 
     // render stick
     objToWorldM = mult(translate(10, 10, 1), rotate(90, vec3(1,0,0)));
     gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
     gl.uniform1i(objectIDLoc, 4);
-    gl.drawArrays(gl.TRIANGLES, num_cube_points+num_sphere_points+num_friesman_points+num_ring_points, num_stick_points);
-
-    // render fire
-    objToWorldM = translate(10, 10, 1.5);
-    gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
-    gl.uniform1i(objectIDLoc, 5);
-    gl.drawArrays(gl.TRIANGLES, num_cube_points+num_sphere_points+num_friesman_points+num_ring_points+num_stick_points, num_fire_points);
+    gl.drawArrays(gl.TRIANGLES, num_fire_points+num_cube_points+num_sphere_points+num_friesman_points+num_ring_points, num_stick_points);
 
     timer++;
     window.requestAnimFrame(render);
