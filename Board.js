@@ -56,6 +56,8 @@ function Board()
 
 	// stores the previous value of the map
 	this.prevState = [ROAD_EMPTY, ROAD_EMPTY, ROAD_EMPTY, ROAD_EMPTY];
+	this.score = 0;
+	this.life = 3;
 }
 
 // displaying the map
@@ -114,6 +116,8 @@ Board.prototype.move = function(type, number)
 			{
 				if(this.mapArray[nextY][nextX] === ROAD_KETCHUP || this.mapArray[nextY][nextX] === ROAD_EMPTY)
 				{
+					if (this.mapArray[nextY][nextX] === ROAD_KETCHUP)
+						this.score += 100;
 					//////////////// TODO: UPDATE THE SCORE AND DECREMENT THE # OF KETCHUP DOTS //////////////////////////////
 					this.mapArray[currY][currX] = ROAD_EMPTY;	// mark the point as visited
 					this.mapArray[nextY][nextX] = 'F';			// mark the next point as Friesman
@@ -125,6 +129,44 @@ Board.prototype.move = function(type, number)
 				}
 				else if(this.mapArray[nextY][nextX] === '0' || this.mapArray[nextY][nextX] === '1' || this.mapArray[nextY][nextX] === '2' || this.mapArray[nextY][nextX] === '3')
 				{
+				// 	var whichEnemy = parseInt(this.mapArray[nextY][nextX]);
+				 	this.mapArray[currY][currX] = ROAD_EMPTY;
+				// 	this.mapArray[nextY][nextX] = this.prevState[whichEnemy];
+
+					for (var i = 0; i < 4; i++)
+					{
+						var enemyY = this.enemyArray[i].y;
+						var enemyX = this.enemyArray[i].x;
+						if (isEnemy(this.prevState[i]))
+							this.mapArray[enemyY][enemyX] = ROAD_EMPTY;
+						else
+							this.mapArray[enemyY][enemyX] = this.prevState[i];
+						this.prevState[i] = ROAD_EMPTY;
+					}
+
+					this.mapArray[13][10] = '0';
+					this.mapArray[11][9] = '1';
+					this.mapArray[11][10] = '2';
+					this.mapArray[11][11] = '3';
+					this.mapArray[5][10] = 'F';
+
+					// creating enemies inside of the map
+					this.enemyArray = [new Enemy(DUMB_ENEMY, 10, 13, WEST, true),
+									   new Enemy(DUMB_ENEMY, 9, 11, EAST, false),
+									   new Enemy(SMART_ENEMY, 10, 11, NORTH, false),
+									   new Enemy(SMART_ENEMY, 11, 11, WEST, false)];
+
+					// creating Friesman
+					this.friesMan = new Friesman(10, 5, NORTH);
+
+					this.prevEnemyArray = [new Enemy(DUMB_ENEMY, 10, 13, WEST, true),
+										   new Enemy(DUMB_ENEMY, 9, 11, EAST, false),
+										   new Enemy(SMART_ENEMY, 10, 11, NORTH, false),
+										   new Enemy(SMART_ENEMY, 11, 11, WEST, false)]
+
+				    this.prevFriesMan = new Friesman(10, 5, NORTH);
+
+					MOVED = -1;
 					this.died = true;
 					return;
 				}
@@ -436,9 +478,42 @@ Board.prototype.move = function(type, number)
 				}
 				else if(this.mapArray[nextY][nextX] === 'F')		// enemy has killed Friesman
 				{
-					this.mapArray[currY][currX] = this.prevState[number];
-					this.prevState[number] = this.mapArray[nextY][nextX];
-					this.mapArray[nextY][nextX] = currChar;
+					this.mapArray[nextY][nextX] = ROAD_EMPTY;
+					
+					for (var i = 0; i < 4; i++)
+					{
+						var enemyY = this.enemyArray[i].y;
+						var enemyX = this.enemyArray[i].x;
+						if (isEnemy(this.prevState[i]))
+							this.mapArray[enemyY][enemyX] = ROAD_EMPTY;
+						else
+							this.mapArray[enemyY][enemyX] = this.prevState[i];
+						this.prevState[i] = ROAD_EMPTY;
+					}
+
+					this.mapArray[13][10] = '0';
+					this.mapArray[11][9] = '1';
+					this.mapArray[11][10] = '2';
+					this.mapArray[11][11] = '3';
+					this.mapArray[5][10] = 'F';
+
+					// creating enemies inside of the map
+					this.enemyArray = [new Enemy(DUMB_ENEMY, 10, 13, WEST, true),
+									   new Enemy(DUMB_ENEMY, 9, 11, EAST, false),
+									   new Enemy(SMART_ENEMY, 10, 11, NORTH, false),
+									   new Enemy(SMART_ENEMY, 11, 11, WEST, false)];
+
+					// creating Friesman
+					this.friesMan = new Friesman(10, 5, NORTH);
+
+					this.prevEnemyArray = [new Enemy(DUMB_ENEMY, 10, 13, WEST, true),
+										   new Enemy(DUMB_ENEMY, 9, 11, EAST, false),
+										   new Enemy(SMART_ENEMY, 10, 11, NORTH, false),
+										   new Enemy(SMART_ENEMY, 11, 11, WEST, false)]
+
+				    this.prevFriesMan = new Friesman(10, 5, NORTH);
+
+					MOVED = -1;
 					this.died = true;
 					repeat = false;
 				}
