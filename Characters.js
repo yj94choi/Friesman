@@ -24,7 +24,7 @@ function Friesman(startX, startY, dir)
 
 function Enemy(enemyType, startX, startY, passed)
 {
-	this.type = enemyType;
+	this.enemyType = enemyType;
 	this.x = startX;
 	this.y = startY;
 	this.currDir = NORTH;

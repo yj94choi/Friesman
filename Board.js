@@ -10,7 +10,7 @@ function Board()
 	// creating enemies inside of the map
 	this.enemyArray = [new Enemy(DUMB_ENEMY, 10, 13, WEST, true),
 					   new Enemy(DUMB_ENEMY, 9, 11, EAST, false),
-					   new Enemy(SMART_ENEMY, 10, 11, NORTH, false),
+					   new Enemy(DUMB_ENEMY, 10, 11, NORTH, false),
 					   new Enemy(SMART_ENEMY, 11, 11, WEST, false)];
 
 	// creating Friesman
@@ -18,7 +18,7 @@ function Board()
 
 	this.prevEnemyArray = [new Enemy(DUMB_ENEMY, 10, 13, WEST, true),
 						   new Enemy(DUMB_ENEMY, 9, 11, EAST, false),
-						   new Enemy(SMART_ENEMY, 10, 11, NORTH, false),
+						   new Enemy(DUMB_ENEMY, 10, 11, NORTH, false),
 						   new Enemy(SMART_ENEMY, 11, 11, WEST, false)]
 
     this.prevFriesMan = new Friesman(10, 5, NORTH);
@@ -153,7 +153,7 @@ Board.prototype.move = function(type, number)
 					// creating enemies inside of the map
 					this.enemyArray = [new Enemy(DUMB_ENEMY, 10, 13, WEST, true),
 									   new Enemy(DUMB_ENEMY, 9, 11, EAST, false),
-									   new Enemy(SMART_ENEMY, 10, 11, NORTH, false),
+									   new Enemy(DUMB_ENEMY, 10, 11, NORTH, false),
 									   new Enemy(SMART_ENEMY, 11, 11, WEST, false)];
 
 					// creating Friesman
@@ -161,7 +161,7 @@ Board.prototype.move = function(type, number)
 
 					this.prevEnemyArray = [new Enemy(DUMB_ENEMY, 10, 13, WEST, true),
 										   new Enemy(DUMB_ENEMY, 9, 11, EAST, false),
-										   new Enemy(SMART_ENEMY, 10, 11, NORTH, false),
+										   new Enemy(DUMB_ENEMY, 10, 11, NORTH, false),
 										   new Enemy(SMART_ENEMY, 11, 11, WEST, false)]
 
 				    this.prevFriesMan = new Friesman(10, 5, NORTH);
@@ -178,6 +178,66 @@ Board.prototype.move = function(type, number)
 	{
 		this.prevEnemyArray[number].x = this.enemyArray[number].x;
 		this.prevEnemyArray[number].y = this.enemyArray[number].y;
+
+		var currX = this.enemyArray[number].x;
+		var currY = this.enemyArray[number].y;
+		var dir = this.enemyArray[number].currDir;
+		var currChar = number.toString();
+		var enemyType = this.enemyArray[number].enemyType;
+		var dirIndex = 0;
+
+		if (enemyType === SMART_ENEMY)
+		{
+			var friesX = this.friesMan.x;
+			var friesY = this.friesMan.y;
+
+			if (currX === friesX)
+			{
+				if (friesY > currY)
+					var dirArray = [SOUTH, WEST, EAST, NORTH];
+				else
+					var dirArray = [NORTH, WEST, EAST, SOUTH];
+			}
+			else if (currY === friesY)
+			{
+				if (friesX < currX)
+					var dirArray = [WEST, SOUTH, NORTH, EAST];
+				else
+					var dirArray = [EAST, SOUTH, NORTH, WEST];
+			}
+			// south or west
+			else if ((friesY > currY) && (friesX < currX))
+			{
+				if ((friesY - currY) > (currX - friesX))
+					var dirArray = [SOUTH, WEST, NORTH, EAST];
+				else
+					var dirArray = [WEST, SOUTH, NORTH, EAST];
+			}
+			// south or east
+			else if ((friesY > currY) && (friesX >= currX))
+			{
+				if ((friesY - currY) > (friesX - currX))
+					var dirArray = [SOUTH, EAST, NORTH, WEST];
+				else
+					var dirArray = [EAST, SOUTH, NORTH, WEST];
+			}
+			// north or west
+			else if ((friesY <= currY) && (friesX < currX))
+			{
+				if ((currY - friesY) > (currX - friesX))
+					var dirArray = [NORTH, WEST, SOUTH, EAST];
+				else
+					var dirArray = [WEST, NORTH, SOUTH, EAST];
+			}
+			else
+			{
+				if ((currY - friesY) > (friesX - currX))
+					var dirArray = [NORTH, EAST, SOUTH, WEST];
+				else
+					var dirArray = [EAST, NORTH, SOUTH, WEST];
+			}
+		}
+
 		if(MOVED < 10)
 		{
 			switch(MOVED)
@@ -430,10 +490,21 @@ Board.prototype.move = function(type, number)
 		var repeat = false;
 		do
 		{
-			var currX = this.enemyArray[number].x;
-			var currY = this.enemyArray[number].y;
-			var dir = this.enemyArray[number].currDir;
-			var currChar = number.toString();
+			// var currX = this.enemyArray[number].x;
+			// var currY = this.enemyArray[number].y;
+			// var dir = this.enemyArray[number].currDir;
+			// var currChar = number.toString();
+			// var enemyType = this.enemyArray[number].enemyType;
+			// var dirIndex = 0;
+
+			if (enemyType === SMART_ENEMY && dirIndex < 4)
+			{
+				dir = dirArray[dirIndex];
+				dirIndex++;
+			}
+
+			if (enemyType === DUMB_ENEMY)
+				dir = this.enemyArray[number].currDir;
 
 			if(dir === NORTH || dir === SOUTH)
 				var nextX = currX;
@@ -448,6 +519,7 @@ Board.prototype.move = function(type, number)
 				var nextY = currY - 1;
 			else if(dir === SOUTH)
 				var nextY = currY + 1;
+
 
 			if(nextY >= 0 && nextY <= 20 && nextX >= 0 && nextX <= 20)
 			{
@@ -500,7 +572,7 @@ Board.prototype.move = function(type, number)
 					// creating enemies inside of the map
 					this.enemyArray = [new Enemy(DUMB_ENEMY, 10, 13, WEST, true),
 									   new Enemy(DUMB_ENEMY, 9, 11, EAST, false),
-									   new Enemy(SMART_ENEMY, 10, 11, NORTH, false),
+									   new Enemy(DUMB_ENEMY, 10, 11, NORTH, false),
 									   new Enemy(SMART_ENEMY, 11, 11, WEST, false)];
 
 					// creating Friesman
@@ -508,7 +580,7 @@ Board.prototype.move = function(type, number)
 
 					this.prevEnemyArray = [new Enemy(DUMB_ENEMY, 10, 13, WEST, true),
 										   new Enemy(DUMB_ENEMY, 9, 11, EAST, false),
-										   new Enemy(SMART_ENEMY, 10, 11, NORTH, false),
+										   new Enemy(DUMB_ENEMY, 10, 11, NORTH, false),
 										   new Enemy(SMART_ENEMY, 11, 11, WEST, false)]
 
 				    this.prevFriesMan = new Friesman(10, 5, NORTH);
