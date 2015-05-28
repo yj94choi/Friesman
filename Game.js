@@ -56,11 +56,12 @@ window.onload = function init()
     cube2(fireVertices);
     num_fire_points = points.length;
     temp = texCoords.slice();
-    cube();
+    cube();     // maze
     num_cube_points = points.length - num_fire_points;
     ketchupdot(3, false);
     num_sphere_points = points.length - num_fire_points - num_cube_points;
-    friesman();
+    // friesman();
+    cube();     // friesman
     num_friesman_points = points.length - num_fire_points - num_sphere_points - num_cube_points;
     makeTorus(0.7, 0.3, 100, 20, 1.0);
     num_ring_points = points.length - num_fire_points - num_friesman_points - num_sphere_points - num_cube_points;
