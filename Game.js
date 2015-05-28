@@ -30,6 +30,7 @@ var num_stick_points = 0;
 var num_fire_points = 0;
 
 var timer = 0;
+var pause = false;
 
 var vTexCoord;
 
@@ -100,6 +101,12 @@ window.onload = function init()
         {
             modelViewIndex = (modelViewIndex+1) % 3
         }
+        else if (input.keyCode === 80)  // p key (pause)
+        {
+            pause = !pause;
+            if(!pause)
+                render();
+        }
 
     }
 
@@ -157,7 +164,7 @@ window.onload = function init()
     gl.uniform1i(gl.getUniformLocation(program, "texture1"), 1);
 
     // set mPerspective
-    var mPerspective = perspective( 60, canvas.width/canvas.height, 1, 1000);
+    var mPerspective = perspective( 60, canvas.width/canvas.height, 0.01, 1000);
     var mPerspectiveLoc = gl.getUniformLocation(program, "mPerspective");
     gl.uniformMatrix4fv(mPerspectiveLoc, false, new flatten(mPerspective));
 
@@ -179,7 +186,8 @@ function getModelView(index)
         var xAmount = gameBoard.prevFriesMan.x + (gameBoard.friesMan.x - gameBoard.prevFriesMan.x) * timer / 10;
         var yAmount = gameBoard.prevFriesMan.y + (gameBoard.friesMan.y - gameBoard.prevFriesMan.y) * timer / 10;
         var reverseTranslation = translate(-xAmount, -yAmount, 0.0);
-        return mult(getHeading(gameBoard.friesMan.currDir), reverseTranslation);
+        var adjustHeading = mult(translate(0,-2,-3), rotate(40, vec3(1,0,0)));
+        return mult(mult(adjustHeading, getHeading(gameBoard.friesMan.currDir)), reverseTranslation);
     }
     else if(index === 2)
     {
@@ -323,5 +331,6 @@ function render()
     gl.drawArrays(gl.TRIANGLES, num_fire_points+num_cube_points+num_sphere_points+num_friesman_points+num_ring_points, num_stick_points);
 
     timer++;
-    window.requestAnimFrame(render);
+    if(!pause)
+        window.requestAnimFrame(render);
 }
