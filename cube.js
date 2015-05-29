@@ -21,27 +21,27 @@ var texCoord = [
 function quad(a, b, c, d, n) {
     points.push(cubeVertices[a]);
     normals.push(n);
-    texCoords.push(texCoord[1]);
+    texCoords.push(texCoord[0]);
 
     points.push(cubeVertices[b]); 
-    normals.push(n);
-    texCoords.push(texCoord[2]); 
-
-    points.push(cubeVertices[c]); 
-    normals.push(n);
-    texCoords.push(texCoord[3]); 
-   
-    points.push(cubeVertices[a]); 
     normals.push(n);
     texCoords.push(texCoord[1]); 
 
     points.push(cubeVertices[c]); 
     normals.push(n);
-    texCoords.push(texCoord[3]); 
+    texCoords.push(texCoord[2]); 
+   
+    points.push(cubeVertices[a]); 
+    normals.push(n);
+    texCoords.push(texCoord[0]); 
+
+    points.push(cubeVertices[c]); 
+    normals.push(n);
+    texCoords.push(texCoord[2]); 
 
     points.push(cubeVertices[d]); 
     normals.push(n);
-    texCoords.push(texCoord[0]);   
+    texCoords.push(texCoord[3]);   
 }
 
 // push points and texture coordinates for a cube

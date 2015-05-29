@@ -47,6 +47,7 @@ uniform int objectID;
 varying vec2 fTexCoord;		// interpolated texture coordinate values
 uniform sampler2D texture0;	// texture 0: fire
 uniform sampler2D texture1;
+uniform sampler2D texture2;
 
 varying vec3 N, L, E;
 // uniform vec4 ambientProduct, diffuseProduct, specularProduct;
@@ -69,6 +70,8 @@ main()
 		objColor = vec4(0.6, 0.2, 0.2, 1.0);
 	if(objectID == 5)
 		objColor = texture2D(texture0, fTexCoord);
+	if(objectID == 6)
+		objColor = texture2D(texture2, fTexCoord);
 
 	float shininess = 10.0;
 	vec4 ambientProduct = objColor * vec4(0.5, 0.5, 0.5, 1.0);;
@@ -107,6 +110,8 @@ main()
 
 <img id="fire" src="fire2.jpeg" hidden></img>
 <img id="brick" src="stonebrick.jpeg" hidden></img>
+<img id="logo" src="mcdonald.png" hidden></img>
+
 
 <body>
 <canvas id="gl-canvas" width="720" height="540">
