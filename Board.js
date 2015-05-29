@@ -3,10 +3,13 @@ var ROAD_KETCHUP = '.';
 var BLANK_SPACE = 'x';
 var DOOR = 'd'
 var WALL = 'o';
-var MOVED = 0;
+var MOVED = -1;
 
 function Board()
 {
+	this.startAudio = new Audio('start.mp3');
+	this.startAudio.play();
+	this.diedAudio = new Audio('nonono.mp3');
 	// creating enemies inside of the map
 	this.enemyArray = [new Enemy(DUMB_ENEMY, 10, 13, WEST, true),
 					   new Enemy(DUMB_ENEMY, 9, 11, EAST, false),
@@ -168,6 +171,7 @@ Board.prototype.move = function(type, number)
 
 					MOVED = -1;
 					this.died = true;
+					this.diedAudio.play();
 					return;
 				}
 			}
@@ -484,6 +488,8 @@ Board.prototype.move = function(type, number)
 						this.enemyArray[3].currDir = WEST;
 					}
 					return;
+				default:
+					return;
 			}
 		}
 
@@ -587,6 +593,7 @@ Board.prototype.move = function(type, number)
 
 					MOVED = -1;
 					this.died = true;
+					this.diedAudio.play();
 					repeat = false;
 				}
 				else

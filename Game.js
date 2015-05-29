@@ -173,8 +173,8 @@ window.onload = function init()
     objectIDLoc = gl.getUniformLocation(program, "objectID");
     mNormalLoc = gl.getUniformLocation(program, "mNormal");  // normal matrix to be used in vertex shader for shading
 
-    render();
 
+    render();
 };
 
 function getModelView(index)
@@ -217,7 +217,6 @@ function render()
     // TODO: USE A REAL TIMER
     if(timer%10 === 0)
     {
-
         gameBoard.move(MOVE_FRIESMAN, 0);
         for (var i = 0; i < 4; i++)
         {
@@ -226,7 +225,7 @@ function render()
             gameBoard.move(MOVE_ENEMY, i);
         }
         if(MOVED < 20)
-        MOVED++;
+            MOVED++;
         timer = 0;
     }
 
@@ -331,6 +330,9 @@ function render()
     gl.drawArrays(gl.TRIANGLES, num_fire_points+num_cube_points+num_sphere_points+num_friesman_points+num_ring_points, num_stick_points);
 
     timer++;
-    if(!pause)
+
+    if (MOVED === 0)
+        setTimeout(function (){window.requestAnimFrame(render)}, 400);
+    else if (!pause)
         window.requestAnimFrame(render);
 }
