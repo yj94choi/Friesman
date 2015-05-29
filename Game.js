@@ -12,6 +12,7 @@ var modelViewIndex = 0;
 var mModelViewLoc;
 var mTranslationLoc;
 var mObjToWorldLoc;
+var vTexCoord;
 
 var gameBoard;
 var field;
@@ -33,15 +34,12 @@ var num_floor_points = 0;
 var timer = 0;
 var pause = false;
 
-var vTexCoord;
+var rock;
+var rock_init_position = vec3(10,0,10);
+var rock_init_speed = vec3(0.0, 0.05, 0.05);
 
-var floors = [
-    translate(7, 9, 0), translate(8, 9, 0), translate(9, 9, 0), translate(10, 9, 0), translate(11, 9, 0), translate(12, 9, 0), translate(13, 9, 0),
-    translate(7, 10, 0), translate(13, 10, 0),
-    translate(7, 11, 0), translate(9, 11, 0), translate(10, 11, 0), translate(11, 11, 0), translate(13, 11, 0),
-    translate(7, 12, 0), translate(10, 12, 0), translate(13, 12, 0),
-    translate(7, 13, 0), translate(8, 13, 0), translate(9, 13, 0), translate(10, 13, 0), translate(11, 13, 0), translate(12, 13, 0), translate(13, 13, 0)
-];
+// for debugging
+var disable_enemy = true;
 
 window.onload = function init()
 {
@@ -51,6 +49,9 @@ window.onload = function init()
     if ( !gl ) { alert( "WebGL isn't available" ); }
 
     gameBoard = new Board();
+
+    //obstacle
+    rock = new ObstacleObject(rock_init_position, rock_init_speed, vec3(0.0, 0.0, -0.003));
 
     for ( var x = 0; x < 21; x++)
     {
@@ -63,23 +64,30 @@ window.onload = function init()
         }
     }
 
+    // fire
     cube2(fireVertices);
     num_fire_points = points.length;
-    temp = texCoords.slice();
-    cube();     // maze
+    // maze
+    cube();
     num_cube_points = points.length - num_fire_points;
-
+    // floor
     floor(0, 1, 2, 3, vec4(0,0,1,1));
     num_floor_points = points.length - num_fire_points - num_cube_points;
-
+    // ketchup dots
     ketchupdot(3, false);
     num_sphere_points = points.length - num_floor_points - num_fire_points - num_cube_points;
+    // friesman
     cube();
     num_friesman_points = points.length - num_floor_points - num_fire_points - num_sphere_points - num_cube_points;
+    // rings
     makeTorus(0.7, 0.3, 100, 20, 1.0);
     num_ring_points = points.length - num_floor_points - num_fire_points - num_friesman_points - num_sphere_points - num_cube_points;
+    // stick
     cube2(stickVertices);
     num_stick_points = points.length - num_floor_points - num_fire_points - num_ring_points - num_friesman_points - num_sphere_points - num_cube_points;
+    //obstacle
+    obstacle(2, false);
+    num_obstacle_points = points.length - num_floor_points - num_fire_points - num_ring_points - num_friesman_points - num_sphere_points - num_cube_points - num_stick_points;
 
     window.onkeydown = function(input)
     {
@@ -195,7 +203,6 @@ window.onload = function init()
     objectIDLoc = gl.getUniformLocation(program, "objectID");
     mNormalLoc = gl.getUniformLocation(program, "mNormal");  // normal matrix to be used in vertex shader for shading
 
-
     render();
 };
 
@@ -240,12 +247,13 @@ function render()
     if(timer%10 === 0)
     {
         gameBoard.move(MOVE_FRIESMAN, 0);
-        for (var i = 0; i < 4; i++)
-        {
-            if (gameBoard.died)
-                break;
-            gameBoard.move(MOVE_ENEMY, i);
-        }
+        if(!disable_enemy)
+            for (var i = 0; i < 4; i++)
+            {
+                if (gameBoard.died)
+                    break;
+                gameBoard.move(MOVE_ENEMY, i);
+            }
         if(MOVED < 20)
             MOVED++;
         timer = 0;
@@ -360,6 +368,22 @@ function render()
     gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
     gl.uniform1i(objectIDLoc, 4);
     gl.drawArrays(gl.TRIANGLES, num_floor_points+num_fire_points+num_cube_points+num_sphere_points+num_friesman_points+num_ring_points, num_stick_points);
+
+    // render obstacle
+    if (MOVED !== 0)
+    {
+        rock.speed = add(rock.speed, rock.acceleration);
+        rock.position = add(rock.position, rock.speed);
+    }
+    if(rock.position[2] <= 0.3)
+    {
+        rock.speed = rock_init_speed;
+        rock.position = rock_init_position;
+    }
+    objToWorldM = mult(translate(rock.position), scale(0.3, 0.3, 0.3));
+    gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
+    gl.uniform1i(objectIDLoc, 7);
+    gl.drawArrays(gl.TRIANGLES, num_floor_points+num_fire_points+num_cube_points+num_sphere_points+num_friesman_points+num_ring_points+num_stick_points, num_obstacle_points);
 
     timer++;
 

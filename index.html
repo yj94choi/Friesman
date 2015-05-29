@@ -70,8 +70,10 @@ main()
 		objColor = vec4(0.6, 0.2, 0.2, 1.0);
 	if(objectID == 5)
 		objColor = texture2D(texture0, fTexCoord);
-	if(objectID == 6)
+	if(objectID == 6)	// floor
 		objColor = texture2D(texture2, fTexCoord);
+	if(objectID == 7)
+		objColor = vec4(0.0, 0.0, 0.0, 1.0);
 
 	float shininess = 10.0;
 	vec4 ambientProduct = objColor * vec4(0.5, 0.5, 0.5, 1.0);;
@@ -108,6 +110,7 @@ main()
 <script type="text/javascript" src="cube.js"></script>
 <script type="text/javascript" src="torch.js"></script>
 <script type="text/javascript" src="floor.js"></script>
+<script type="text/javascript" src="obstacle.js"></script>
 
 <img id="fire" src="fire2.jpeg" hidden></img>
 <img id="brick" src="stonebrick.jpeg" hidden></img>
