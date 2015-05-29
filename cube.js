@@ -18,26 +18,41 @@ var texCoord = [
 ];
 
 // push points and texture coordinates for a quadrilateral
-function quad(a, b, c, d, n) {
+function quad(a, b, c, d, n, mapface) {
     points.push(cubeVertices[a]);
     normals.push(n);
-    texCoords.push(texCoord[1]);
+    if(mapface)
+        texCoords.push(texCoord[1]);
+    else
+        texCoords.push(texCoord[0]);
 
     points.push(cubeVertices[b]); 
     normals.push(n);
-    texCoords.push(texCoord[2]); 
+    if(mapface)
+        texCoords.push(texCoord[2]); 
+    else
+        texCoords.push(texCoord[0]);
 
     points.push(cubeVertices[c]); 
     normals.push(n);
-    texCoords.push(texCoord[3]); 
-   
+    if(mapface)
+        texCoords.push(texCoord[3]); 
+    else
+        texCoords.push(texCoord[0]);
+       
     points.push(cubeVertices[a]); 
     normals.push(n);
-    texCoords.push(texCoord[1]); 
+    if(mapface)
+        texCoords.push(texCoord[1]); 
+    else
+        texCoords.push(texCoord[0]);
 
     points.push(cubeVertices[c]); 
     normals.push(n);
-    texCoords.push(texCoord[3]); 
+    if(mapface)
+        texCoords.push(texCoord[3]); 
+    else
+        texCoords.push(texCoord[0]);
 
     points.push(cubeVertices[d]); 
     normals.push(n);
@@ -45,11 +60,11 @@ function quad(a, b, c, d, n) {
 }
 
 // push points and texture coordinates for a cube
-function cube(){
-    quad(1, 2, 3, 0, vec4(0,0,1,1));
-    quad(3, 2, 6, 7, vec4(1,0,0,1));
-    quad(4, 7, 3, 0, vec4(0,-1,0,1));
-    quad(1, 2, 6, 5, vec4(0,1,0,1));
-    quad(4, 5, 6, 7, vec4(0,0,-1,1));
-    quad(5, 4, 0, 1, vec4(-1,0,0,1));
+function cube(friesman){
+    quad(1, 2, 3, 0, vec4(0,0,1,1), !friesman);
+    quad(3, 2, 6, 7, vec4(1,0,0,1), !friesman);
+    quad(4, 7, 3, 0, vec4(0,-1,0,1), !friesman);
+    quad(1, 2, 6, 5, vec4(0,1,0,1), true);  // face of friesman
+    quad(4, 5, 6, 7, vec4(0,0,-1,1), !friesman);
+    quad(5, 4, 0, 1, vec4(-1,0,0,1), !friesman);
 }

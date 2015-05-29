@@ -68,26 +68,26 @@ window.onload = function init()
     cube2(fireVertices);
     num_fire_points = points.length;
     // maze
-    cube();
+    cube(false);
     num_cube_points = points.length - num_fire_points;
     // floor
     floor(0, 1, 2, 3, vec4(0,0,1,1));
     num_floor_points = points.length - num_fire_points - num_cube_points;
+    // friesman
+    cube(true);
+    num_friesman_points = points.length - num_fire_points - num_cube_points - num_floor_points;
     // ketchup dots
     ketchupdot(3, false);
-    num_sphere_points = points.length - num_floor_points - num_fire_points - num_cube_points;
-    // friesman
-    cube();
-    num_friesman_points = points.length - num_floor_points - num_fire_points - num_sphere_points - num_cube_points;
+    num_sphere_points = points.length - num_fire_points - num_cube_points - num_floor_points - num_friesman_points;
     // rings
     makeTorus(0.7, 0.3, 100, 20, 1.0);
-    num_ring_points = points.length - num_floor_points - num_fire_points - num_friesman_points - num_sphere_points - num_cube_points;
+    num_ring_points = points.length - num_fire_points - num_cube_points - num_floor_points - num_friesman_points - num_sphere_points;
     // stick
     cube2(stickVertices);
-    num_stick_points = points.length - num_floor_points - num_fire_points - num_ring_points - num_friesman_points - num_sphere_points - num_cube_points;
+    num_stick_points = points.length - num_fire_points - num_cube_points - num_floor_points - num_friesman_points - num_sphere_points - num_ring_points;
     //obstacle
     obstacle(2, false);
-    num_obstacle_points = points.length - num_floor_points - num_fire_points - num_ring_points - num_friesman_points - num_sphere_points - num_cube_points - num_stick_points;
+    num_obstacle_points = points.length - num_fire_points - num_cube_points - num_floor_points - num_friesman_points - num_sphere_points - num_ring_points - num_stick_points;
 
     window.onkeydown = function(input)
     {
@@ -179,7 +179,7 @@ window.onload = function init()
     gl.bindTexture( gl.TEXTURE_2D, texture1 );
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
     gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image1 );
-    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );  // use trilinear filtering
+    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
     gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
     gl.uniform1i(gl.getUniformLocation(program, "texture1"), 1);
 
@@ -189,9 +189,19 @@ window.onload = function init()
     gl.bindTexture( gl.TEXTURE_2D, texture2 );
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
     gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image2 );
-    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );  // use trilinear filtering
+    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
     gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
     gl.uniform1i(gl.getUniformLocation(program, "texture2"), 2);
+
+    var image3 = document.getElementById("friesman");
+    texture3 = gl.createTexture();
+    gl.activeTexture(gl.TEXTURE3);
+    gl.bindTexture( gl.TEXTURE_2D, texture3 );
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image3 );
+    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
+    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
+    gl.uniform1i(gl.getUniformLocation(program, "texture3"), 3);
 
     // set mPerspective
     var mPerspective = perspective( 60, canvas.width/canvas.height, 0.01, 1000);
@@ -239,6 +249,18 @@ function getHeading(dir)
         return mult(rotate(-90, vec3(0,1,0)), rotate(-90, vec3(1,0,0)));
 }
 
+function getFriesmanRotation(dir)
+{
+    if(dir === NORTH)
+        return mat4();
+    if(dir === SOUTH)
+        return rotate(180, vec3(0,0,1));
+    if(dir === EAST)
+        return rotate(-90, vec3(0,0,1));
+    if(dir === WEST)
+        return rotate(90, vec3(0,0,1));
+}
+
 function render() 
 {
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -280,6 +302,7 @@ function render()
         gl.drawArrays( gl.TRIANGLE_STRIP, num_fire_points, num_cube_points);
     }
 
+    // render floor
     for(var k = 0; k < floors.length; k++)
     {
         objToWorldM = floors[k];
@@ -289,28 +312,10 @@ function render()
         gl.drawArrays( gl.TRIANGLES, num_fire_points+num_cube_points, num_floor_points );
     }
 
-    gl.disableVertexAttribArray( vTexCoord );
-
-
-    // render spheres (ketchup dots)
-    for ( var x = 2; x < 19; x++)
-    {
-        for ( var y = 1; y < 20; y++)
-        {
-            if (gameBoard.mapArray[y][x] === ROAD_KETCHUP)
-            {
-                objToWorldM = mult(translate(x*cellSize, y*cellSize, 0.0), scale(0.15, 0.15, 0.15));
-                gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
-
-                gl.uniform1i(objectIDLoc, 1);
-                gl.drawArrays(gl.TRIANGLES, num_floor_points+num_fire_points+num_cube_points, num_sphere_points);
-            }
-        }
-    }
-
     if(gameBoard.died)
     {
         gameBoard.died = false;
+        gl.disableVertexAttribArray( vTexCoord );
     }
     else
     {
@@ -328,15 +333,19 @@ function render()
             var xAmount = gameBoard.prevFriesMan.x + (gameBoard.friesMan.x - gameBoard.prevFriesMan.x) * timer / 10;
             var yAmount = gameBoard.prevFriesMan.y + (gameBoard.friesMan.y - gameBoard.prevFriesMan.y) * timer / 10;
         }
-        objToWorldM = scale(0.5, 0.5, 0.5);
-        // objToWorldM = mult(getHeading(gameBoard.friesMan.currDir), objToWorldM);
-        objToWorldM = mult(translate(xAmount, yAmount, 0.0), objToWorldM);
+        objToWorldM = scale(0.3, 0.3, 1.5);
+        var fRotation = getFriesmanRotation(gameBoard.friesMan.currDir);
+        objToWorldM = mult(fRotation, objToWorldM);
+        objToWorldM = mult(translate(xAmount, yAmount, 0.25), objToWorldM);
         gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
+        gl.uniformMatrix3fv(mNormalLoc, false, new flatten(mat4To3(mult(modelViewM, fRotation))));
         gl.uniform1i(objectIDLoc, 2);
-        gl.drawArrays( gl.TRIANGLES, num_floor_points+num_fire_points+num_cube_points+num_sphere_points, num_friesman_points);
+        gl.drawArrays( gl.TRIANGLES, num_floor_points+num_fire_points+num_cube_points, num_friesman_points);
+
+        gl.disableVertexAttribArray( vTexCoord );
+        gl.uniformMatrix3fv(mNormalLoc, false, new flatten(mat4To3(modelViewM)));
 
         // render enemies
-
         for(var i = 0; i < 4; i++)
         {
             var xAmount = gameBoard.prevEnemyArray[i].x + (gameBoard.enemyArray[i].x - gameBoard.prevEnemyArray[i].x) * timer / 10;
@@ -361,6 +370,22 @@ function render()
         //         }
         //     }
         // }
+    }
+
+    // render spheres (ketchup dots)
+    for ( var x = 2; x < 19; x++)
+    {
+        for ( var y = 1; y < 20; y++)
+        {
+            if (gameBoard.mapArray[y][x] === ROAD_KETCHUP)
+            {
+                objToWorldM = mult(translate(x*cellSize, y*cellSize, 0.0), scale(0.15, 0.15, 0.15));
+                gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
+
+                gl.uniform1i(objectIDLoc, 1);
+                gl.drawArrays(gl.TRIANGLES, num_floor_points+num_fire_points+num_cube_points+num_friesman_points, num_sphere_points);
+            }
+        }
     }
 
     // render stick
