@@ -69,7 +69,7 @@ window.onload = function init()
     cube();     // maze
     num_cube_points = points.length - num_fire_points;
 
-    quad(4, 5, 6, 7, vec4(0,0,-1,1));
+    floor(0, 1, 2, 3, vec4(0,0,1,1));
     num_floor_points = points.length - num_fire_points - num_cube_points;
 
     ketchupdot(3, false);
