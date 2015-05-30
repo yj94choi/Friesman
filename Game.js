@@ -39,7 +39,7 @@ var rock_init_position = vec3(10,0,10);
 var rock_init_speed = vec3(0.0, 0.05, 0.05);
 
 // for debugging
-var disable_enemy = true;
+var disable_enemy = false;
 
 window.onload = function init()
 {
@@ -388,9 +388,10 @@ function render()
     {
         for ( var y = 1; y < 20; y++)
         {
-            if (gameBoard.mapArray[y][x] === ROAD_KETCHUP)
+            if (gameBoard.mapArray[y][x] === ROAD_KETCHUP || gameBoard.mapArray[y][x] === ROAD_POWER)
             {
-                objToWorldM = mult(translate(x*cellSize, y*cellSize, 0.0), scale(0.15, 0.15, 0.15));
+                var dotsize = gameBoard.mapArray[y][x] === ROAD_KETCHUP ? 0.12 : 0.2;
+                objToWorldM = mult(translate(x*cellSize, y*cellSize, 0.0), scale(dotsize, dotsize, dotsize));
                 gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
 
                 gl.uniform1i(objectIDLoc, 1);
