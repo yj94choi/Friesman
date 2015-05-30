@@ -1,5 +1,6 @@
 var ROAD_EMPTY = ' ';
 var ROAD_KETCHUP = '.';
+var ROAD_POWER = '*';
 var BLANK_SPACE = 'x';
 var DOOR = 'd'
 var WALL = 'o';
@@ -36,7 +37,7 @@ function Board()
 	['x', 'o', '.', 'o', 'o', 'o', 'o', 'o', 'o', '.', 'o', '.', 'o', 'o', 'o', 'o', 'o', 'o', '.', 'o', 'x'], // 2
 	['x', 'o', '.', '.', '.', '.', 'o', '.', '.', '.', 'o', '.', '.', '.', 'o', '.', '.', '.', '.', 'o', 'x'], // 3
 	['x', 'o', 'o', '.', 'o', '.', 'o', '.', 'o', 'o', 'o', 'o', 'o', '.', 'o', '.', 'o', '.', 'o', 'o', 'x'], // 4
-	['x', 'o', '.', '.', 'o', '.', '.', '.', '.', '.', 'F', '.', '.', '.', '.', '.', 'o', '.', '.', 'o', 'x'], // 5
+	['x', 'o', '*', '.', 'o', '.', '.', '.', '.', '.', 'F', '.', '.', '.', '.', '.', 'o', '.', '*', 'o', 'x'], // 5
 	['x', 'o', '.', 'o', 'o', '.', 'o', 'o', 'o', '.', 'o', '.', 'o', 'o', 'o', '.', 'o', 'o', '.', 'o', 'x'], // 6
 	['x', 'o', '.', '.', '.', '.', '.', '.', '.', '.', 'o', '.', '.', '.', '.', '.', '.', '.', '.', 'o', 'x'], // 7
 	['x', 'o', 'o', 'o', 'o', '.', 'o', ' ', 'o', 'o', 'o', 'o', 'o', ' ', 'o', '.', 'o', 'o', 'o', 'o', 'x'], // 8
@@ -49,13 +50,15 @@ function Board()
 	['x', 'o', '.', '.', '.', '.', 'o', '.', '.', '.', 'o', '.', '.', '.', 'o', '.', '.', '.', '.', 'o', 'x'], // 15
 	['x', 'o', '.', 'o', 'o', '.', 'o', '.', 'o', 'o', 'o', 'o', 'o', '.', 'o', '.', 'o', 'o', '.', 'o', 'x'], // 16
 	['x', 'o', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', 'o', 'x'], // 17
-	['x', 'o', '.', 'o', 'o', '.', 'o', 'o', 'o', '.', 'o', '.', 'o', 'o', 'o', '.', 'o', 'o', '.', 'o', 'x'], // 18
+	['x', 'o', '*', 'o', 'o', '.', 'o', 'o', 'o', '.', 'o', '.', 'o', 'o', 'o', '.', 'o', 'o', '*', 'o', 'x'], // 18
 	['x', 'o', '.', '.', '.', '.', '.', '.', '.', '.', 'o', '.', '.', '.', '.', '.', '.', '.', '.', 'o', 'x'], // 19
 	['x', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'x']  // 20
 	];
 
 	// check if friesMan has died
 	this.died = false;
+
+	this.power = false;
 
 	// stores the previous value of the map
 	this.prevState = [ROAD_EMPTY, ROAD_EMPTY, ROAD_EMPTY, ROAD_EMPTY];
@@ -117,10 +120,15 @@ Board.prototype.move = function(type, number)
 			// check the bound
 			if(nextY >= 0 && nextY <= 20 && nextX >= 0 && nextX <= 20)
 			{
-				if(this.mapArray[nextY][nextX] === ROAD_KETCHUP || this.mapArray[nextY][nextX] === ROAD_EMPTY)
+				if(this.mapArray[nextY][nextX] === ROAD_KETCHUP || this.mapArray[nextY][nextX] === ROAD_POWER || this.mapArray[nextY][nextX] === ROAD_EMPTY)
 				{
 					if (this.mapArray[nextY][nextX] === ROAD_KETCHUP)
-						this.score += 100;
+						this.score += 10;
+					else if (this.mapArray[nextY][nextX] === ROAD_POWER)
+					{
+						this.score += 50;
+						this.power = true;
+					}
 					//////////////// TODO: UPDATE THE SCORE AND DECREMENT THE # OF KETCHUP DOTS //////////////////////////////
 					this.mapArray[currY][currX] = ROAD_EMPTY;	// mark the point as visited
 					this.mapArray[nextY][nextX] = 'F';			// mark the next point as Friesman
@@ -539,7 +547,7 @@ Board.prototype.move = function(type, number)
 					this.enemyArray[number].y += (nextY - currY);
 					repeat = false;
 				}
-				else if(this.mapArray[nextY][nextX] === ROAD_KETCHUP || this.mapArray[nextY][nextX] === ROAD_EMPTY || (this.mapArray[nextY][nextX] === 'd' && !this.enemyArray[number].passedDoor))
+				else if(this.mapArray[nextY][nextX] === ROAD_KETCHUP || this.mapArray[nextY][nextX] === ROAD_POWER || this.mapArray[nextY][nextX] === ROAD_EMPTY || (this.mapArray[nextY][nextX] === 'd' && !this.enemyArray[number].passedDoor))
 				{
 					// if(number === 1)
 					// 	console.log("passedDoor: " + this.enemyArray[number].passedDoor.toString());
