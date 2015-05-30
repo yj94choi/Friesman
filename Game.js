@@ -218,21 +218,32 @@ window.onload = function init()
 
 function getModelView(index)
 {
-    if(index === 0)
-        return translate(-10, -10, -20);
-    else if(index === 1)
+    if(gameBoard.prevFriesMan.x === 0 || gameBoard.prevFriesMan.x === 20)
+    {
+        if(gameBoard.friesMan.currDir === WEST)
+            var xAmount = gameBoard.prevFriesMan.x - timer/10;
+        else if(gameBoard.friesMan.currDir === EAST)
+            var xAmount = gameBoard.prevFriesMan.x + timer/10;
+        var yAmount = gameBoard.prevFriesMan.y;
+    }
+    else
     {
         var xAmount = gameBoard.prevFriesMan.x + (gameBoard.friesMan.x - gameBoard.prevFriesMan.x) * timer / 10;
         var yAmount = gameBoard.prevFriesMan.y + (gameBoard.friesMan.y - gameBoard.prevFriesMan.y) * timer / 10;
-        var reverseTranslation = translate(-xAmount, -yAmount, 0.0);
+    }
+    var reverseTranslation = translate(-xAmount, -yAmount, 0.0);
+
+    if(index === 0)
+    {
+        return translate(-10, -10, -20);
+    }
+    else if(index === 1)
+    {
         var adjustHeading = mult(translate(0,-2,-3), rotate(40, vec3(1,0,0)));
         return mult(mult(adjustHeading, getHeading(gameBoard.friesMan.currDir)), reverseTranslation);
     }
     else if(index === 2)
     {
-        var xAmount = gameBoard.prevFriesMan.x + (gameBoard.friesMan.x - gameBoard.prevFriesMan.x) * timer / 10;
-        var yAmount = gameBoard.prevFriesMan.y + (gameBoard.friesMan.y - gameBoard.prevFriesMan.y) * timer / 10;
-        var reverseTranslation = translate(-xAmount, -yAmount, 0.0);
         return mult(mult(rotate(-20, vec3(1,0,0)), translate(0, 2, -5)), reverseTranslation);
     }
 }
