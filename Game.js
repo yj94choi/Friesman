@@ -38,6 +38,8 @@ var rock;
 var rock_init_position = vec3(10,0,10);
 var rock_init_speed = vec3(0.0, 0.05, 0.05);
 
+var door = [];
+
 // for debugging
 var disable_enemy = false;
 
@@ -64,6 +66,11 @@ window.onload = function init()
             else if (!(gameBoard.mapArray[y][x] === BLANK_SPACE || gameBoard.mapArray[y][x] === WALL ) )
             {
                 floors.push( vec3(x*cellSize, y*cellSize, 0) );
+            }
+
+            if (gameBoard.mapArray[y][x] === DOOR)
+            {
+                door.push(vec3 (x*cellSize, y*cellSize, 0));
             }
         }
     }
@@ -425,6 +432,16 @@ function render()
     gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
     gl.uniform1i(objectIDLoc, 7);
     gl.drawArrays(gl.TRIANGLES, num_floor_points+num_fire_points+num_cube_points+num_sphere_points+num_friesman_points+num_ring_points+num_stick_points, num_obstacle_points);
+
+    gl.enable( gl.BLEND );
+    gl.blendFunc( gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA );
+    gl.depthMask( false );
+    objToWorldM = translate(door[0]);
+    gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
+    gl.uniform1i(objectIDLoc, 8);
+    gl.drawArrays( gl.TRIANGLES, num_fire_points, num_cube_points);
+    gl.depthMask( true );
+    gl.disable( gl.BLEND );
 
     timer++;
 

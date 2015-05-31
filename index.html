@@ -74,26 +74,29 @@ main()
 		objColor = texture2D(texture2, fTexCoord);
 	if(objectID == 7)
 		objColor = vec4(0.0, 0.0, 0.0, 1.0);
+	if(objectID == 8)
+		gl_FragColor = vec4(0.01, 0.01, 1.0, 0.6);
+	else
+	{
+		float shininess = 10.0;
+		vec4 ambientProduct = objColor * vec4(0.5, 0.5, 0.5, 1.0);;
+		vec4 diffuseProduct = objColor * vec4(0.5, 0.5, 0.5, 1.0);
+		vec4 specularProduct = vec4(1.0, 1.0, 1.0, 1.0);
+		vec4 fColor;
+		vec3 H = normalize(L + E);				// halfway vector
+		vec4 ambient = ambientProduct;			// ambient term
+		float Kd = max(dot(L,N), 0.0);
+		vec4 diffuse = Kd * diffuseProduct;		// diffuse term
+		float Ks = pow(max(dot(N,H), 0.0), shininess);
+		vec4 specular = Ks * specularProduct;	// specular term
+		if(dot(L,N) < 0.0) {
+			specular = vec4(0.0, 0.0, 0.0, 1.0);
+		}
 
-	float shininess = 10.0;
-	vec4 ambientProduct = objColor * vec4(0.5, 0.5, 0.5, 1.0);;
-	vec4 diffuseProduct = objColor * vec4(0.5, 0.5, 0.5, 1.0);
-	vec4 specularProduct = vec4(1.0, 1.0, 1.0, 1.0);
-	vec4 fColor;
-	vec3 H = normalize(L + E);				// halfway vector
-	vec4 ambient = ambientProduct;			// ambient term
-	float Kd = max(dot(L,N), 0.0);
-	vec4 diffuse = Kd * diffuseProduct;		// diffuse term
-	float Ks = pow(max(dot(N,H), 0.0), shininess);
-	vec4 specular = Ks * specularProduct;	// specular term
-	if(dot(L,N) < 0.0) {
-		specular = vec4(0.0, 0.0, 0.0, 1.0);
+		fColor = ambient + diffuse + specular;
+		fColor.a = 1.0;
+		gl_FragColor = fColor;
 	}
-
-	fColor = ambient + diffuse + specular;
-	fColor.a = 1.0;
-	gl_FragColor = fColor;
-
 }
 </script>
 
