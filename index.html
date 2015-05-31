@@ -19,16 +19,39 @@ varying vec3 N, L, E;		// these vectors will be interpolated and sent to fragmen
 attribute vec4 vTexCoord;	// texture coordinate
 varying vec2 fTexCoord;		// texture coordinate to be interpolated
 
+attribute vec4 vTangent;
+// attribute vec4 vBitangent;
+// varying vec3 Light;		// light vector in texture-space coordinates
+// varying vec3 View;		// view vector in texture-space coordinates
+uniform int normalmap;
+
 void
 main()
 {
-	// fTexCoord = (vTexCoord).xy;
 	vec3 pos = (mModelView * mObjToWorld * vPosition).xyz;
-	vec3 light = (mModelView * vec4(10.0, 10.0, 2.0, 1.0)).xyz;
+	vec3 lightPos = (mModelView * vec4(10.0, 10.0, 2.0, 1.0)).xyz;
 
-	L = normalize(light - pos);					// 	unit vector in the direction of the light source
-	E = -normalize(pos);						//	normalized vector in the direction of the viewer
+	L = normalize(lightPos - pos);			// 	unit vector in the direction of the light source
+	E = -normalize(pos);					//	normalized vector in the direction of the viewer
 	N = normalize(mNormal * vNormal.xyz);	//	unit normal
+	
+	if(normalmap == 1)
+	{
+		vec3 T = normalize(mNormal * vTangent.xyz);
+		vec3 B = cross(N, T);
+
+		// Light vector in texture space
+		L.x = dot(T, lightPos - pos);
+		L.y = dot(B, lightPos - pos);
+		L.z = dot(N, lightPos - pos);
+		L = normalize(L);
+
+		// View vector in texture space
+		E.x = dot(T, -pos);
+		E.y = dot(B, -pos);
+		E.z = dot(N, -pos);
+		E = normalize(E);
+	}
 
 	fTexCoord = vTexCoord.xy;	
     gl_Position = mPerspective * mModelView * mObjToWorld * vPosition;
@@ -49,6 +72,7 @@ uniform sampler2D texture0;	// texture 0: fire
 uniform sampler2D texture1;
 uniform sampler2D texture2;
 uniform sampler2D texture3;
+uniform sampler2D texture4;
 
 varying vec3 N, L, E;
 // uniform vec4 ambientProduct, diffuseProduct, specularProduct;
@@ -58,8 +82,17 @@ void
 main()
 {
 	vec4 objColor;
+	vec3 N2 = N;
+	vec3 L2 = L;
+	vec3 E2 = E;
+	float shininess = 10.0;
 	if(objectID == 0)
-		objColor = texture2D(texture1, fTexCoord);
+	{
+		objColor = vec4(1.0, 0.0, 0.0, 1.0);
+		vec3 normalInColor = texture2D(texture4, fTexCoord).xyz;
+		N2 = normalize(2.0 * normalInColor.xyz - 1.0);
+		shininess = 100.0;
+	}
 	if(objectID == 1)
 		objColor = vec4(0.9765, 0.6667, 0.5333, 1.0);
 	if(objectID == 2)
@@ -75,21 +108,23 @@ main()
 	if(objectID == 7)
 		objColor = vec4(0.0, 0.0, 0.0, 1.0);
 	if(objectID == 8)
+		gl_FragColor = vec4(0.51,0.51,0.51,1.0);
+	else if(objectID == 9)
 		gl_FragColor = vec4(0.01, 0.01, 1.0, 0.6);
 	else
 	{
-		float shininess = 10.0;
+		
 		vec4 ambientProduct = objColor * vec4(0.5, 0.5, 0.5, 1.0);;
 		vec4 diffuseProduct = objColor * vec4(0.5, 0.5, 0.5, 1.0);
 		vec4 specularProduct = vec4(1.0, 1.0, 1.0, 1.0);
 		vec4 fColor;
-		vec3 H = normalize(L + E);				// halfway vector
+		vec3 H2 = normalize(L2 + E2);				// halfway vector
 		vec4 ambient = ambientProduct;			// ambient term
-		float Kd = max(dot(L,N), 0.0);
+		float Kd = max(dot(L2,N2), 0.0);
 		vec4 diffuse = Kd * diffuseProduct;		// diffuse term
-		float Ks = pow(max(dot(N,H), 0.0), shininess);
+		float Ks = pow(max(dot(N2,H2), 0.0), shininess);
 		vec4 specular = Ks * specularProduct;	// specular term
-		if(dot(L,N) < 0.0) {
+		if(dot(L2,N2) < 0.0) {
 			specular = vec4(0.0, 0.0, 0.0, 1.0);
 		}
 
@@ -114,9 +149,12 @@ main()
 <script type="text/javascript" src="torch.js"></script>
 <script type="text/javascript" src="floor.js"></script>
 <script type="text/javascript" src="obstacle.js"></script>
+<script type="text/javascript" src="shade.js"></script>
+<script type="text/javascript" src="loadImage.js"></script>
 
 <img id="fire" src="images/fire2.jpeg" hidden></img>
 <img id="brick" src="images/stonebrick.jpeg" hidden></img>
+<img id="wall" src="images/wall_normal.png" hidden></img>
 <img id="logo" src="images/tile.png" hidden></img>
 <img id="friesman" src="images/friesman.jpeg" hidden></img>
 

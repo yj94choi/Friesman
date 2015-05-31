@@ -2,6 +2,7 @@ var gl;
 var points = [];
 var normals = [];
 var texCoords = [];
+var tangents = [];
 
 var canvas;
 var program;
@@ -30,15 +31,39 @@ var num_ring_points = 0;
 var num_stick_points = 0;
 var num_fire_points = 0;
 var num_floor_points = 0;
+var num_obstacle_points = 0;
+var num_shade_points = 0;
 
 var timer = 0;
 var pause = false;
 
-var rock;
-var rock_init_position = vec3(10,0,10);
-var rock_init_speed = vec3(0.0, 0.05, 0.05);
+var rock1;
+var rock1_init_position = vec3(0,11,20);
+var rock1_init_speed = vec3(0.0375, 0.00, 0.05);
+var rock1_end_position = vec3(5,11,0);
+
+var rock2;
+var rock2_init_position = vec3(20,11,20);
+var rock2_init_speed = vec3(-0.0375,0.00,0.05);
+var rock2_end_position = vec3(15,11,0);
+
+var gurimja1;
+var shade1_init_position = vec3(rock1_init_position[0],rock1_init_position[1], -0.49);
+
+var gurimja2;
+var shade2_init_position = vec3(rock2_init_position[0],rock2_init_position[1], -0.49);
+
+var total_distance;
+var percent_moved;
+var shade_scale_factor = 0;
 
 var door = [];
+
+var fries_x_amount;
+var fries_y_amount;
+
+var enemy_x_amount;
+var enemy_y_amount;
 
 // for debugging
 var disable_enemy = false;
@@ -53,7 +78,10 @@ window.onload = function init()
     gameBoard = new Board();
 
     //obstacle
-    rock = new ObstacleObject(rock_init_position, rock_init_speed, vec3(0.0, 0.0, -0.003));
+    rock1 = new ObstacleObject(rock1_init_position, rock1_init_speed, vec3(0.0, 0.0, -0.003));
+    rock2 = new ObstacleObject(rock2_init_position, rock2_init_speed,vec3(0.0,0.0,-0.003));
+    gurimja1 = new ShadeObject(shade1_init_position);
+    gurimja2 = new ShadeObject(shade2_init_position);
 
     for ( var x = 0; x < 21; x++)
     {
@@ -75,12 +103,12 @@ window.onload = function init()
         }
     }
 
-    // fire
-    cube2(fireVertices);
-    num_fire_points = points.length;
     // maze
     cube(false);
-    num_cube_points = points.length - num_fire_points;
+    num_cube_points = points.length;
+    // fire
+    cube2(fireVertices);
+    num_fire_points = points.length - num_cube_points;
     // floor
     floor(0, 1, 2, 3, vec4(0,0,1,1));
     num_floor_points = points.length - num_fire_points - num_cube_points;
@@ -99,6 +127,9 @@ window.onload = function init()
     //obstacle
     obstacle(2, false);
     num_obstacle_points = points.length - num_fire_points - num_cube_points - num_floor_points - num_friesman_points - num_sphere_points - num_ring_points - num_stick_points;
+    //shade
+    shade(4, false);
+    num_shade_points = points.length - num_fire_points - num_cube_points - num_floor_points - num_friesman_points - num_sphere_points - num_ring_points - num_stick_points - num_obstacle_points;
 
     window.onkeydown = function(input)
     {
@@ -174,45 +205,15 @@ window.onload = function init()
     gl.vertexAttribPointer( vTexCoord, 4, gl.FLOAT, false, 0, 0 );
     gl.disableVertexAttribArray( vTexCoord );
 
-    var image0 = document.getElementById("fire");
-    texture0 = gl.createTexture();
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture( gl.TEXTURE_2D, texture0 );
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-    gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image0 );
-    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );   // use nearest neighbor filtering
-    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
-    gl.uniform1i(gl.getUniformLocation(program, "texture0"), 0);
+    // tangents array
+    var tanBuffer = gl.createBuffer();
+    gl.bindBuffer( gl.ARRAY_BUFFER, tanBuffer );
+    gl.bufferData( gl.ARRAY_BUFFER, flatten(tangents), gl.STATIC_DRAW );
+    vTangent = gl.getAttribLocation( program, "vTangent" );
+    gl.vertexAttribPointer( vTangent, 4, gl.FLOAT, false, 0, 0 );
+    gl.disableVertexAttribArray( vTangent );
 
-    var image1 = document.getElementById("brick");
-    texture1 = gl.createTexture();
-    gl.activeTexture(gl.TEXTURE1);
-    gl.bindTexture( gl.TEXTURE_2D, texture1 );
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-    gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image1 );
-    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
-    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
-    gl.uniform1i(gl.getUniformLocation(program, "texture1"), 1);
-
-    var image2 = document.getElementById("logo");
-    texture2 = gl.createTexture();
-    gl.activeTexture(gl.TEXTURE2);
-    gl.bindTexture( gl.TEXTURE_2D, texture2 );
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-    gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image2 );
-    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
-    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
-    gl.uniform1i(gl.getUniformLocation(program, "texture2"), 2);
-
-    var image3 = document.getElementById("friesman");
-    texture3 = gl.createTexture();
-    gl.activeTexture(gl.TEXTURE3);
-    gl.bindTexture( gl.TEXTURE_2D, texture3 );
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-    gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image3 );
-    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
-    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
-    gl.uniform1i(gl.getUniformLocation(program, "texture3"), 3);
+    loadTextures();   // defined in loadImage.js
 
     // set mPerspective
     var mPerspective = perspective( 60, canvas.width/canvas.height, 0.01, 1000);
@@ -223,6 +224,7 @@ window.onload = function init()
     mObjToWorldLoc = gl.getUniformLocation(program, "mObjToWorld");
     objectIDLoc = gl.getUniformLocation(program, "objectID");
     mNormalLoc = gl.getUniformLocation(program, "mNormal");  // normal matrix to be used in vertex shader for shading
+    normalmapLoc = gl.getUniformLocation(program, "normalmap");
 
     render();
 };
@@ -307,13 +309,9 @@ function render()
     gl.uniformMatrix4fv(mModelViewLoc, false, new flatten(modelViewM));
     gl.uniformMatrix3fv(mNormalLoc, false, new flatten(mat4To3(modelViewM)));
     
-    // render fire
     gl.enableVertexAttribArray( vTexCoord );
-    objToWorldM = translate(10, 10, 1.5);
-    gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
-    gl.uniform1i(objectIDLoc, 5);
-    gl.drawArrays(gl.TRIANGLES, 0, num_fire_points);
 
+    gl.enableVertexAttribArray( vTangent );
     // render cubes (maze)
     for(var k = 0; k < walls.length; k++)
     {
@@ -321,8 +319,17 @@ function render()
         gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
         
         gl.uniform1i(objectIDLoc, 0);
-        gl.drawArrays( gl.TRIANGLES, num_fire_points, num_cube_points);
+        gl.uniform1i(normalmapLoc, 1);
+        gl.drawArrays( gl.TRIANGLES, 0, num_cube_points);
     }
+    gl.disableVertexAttribArray( vTangent );
+    gl.uniform1i(normalmapLoc, 0);
+
+    // render fire
+    objToWorldM = translate(10, 10, 1.5);
+    gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
+    gl.uniform1i(objectIDLoc, 5);
+    gl.drawArrays(gl.TRIANGLES, num_cube_points, num_fire_points);
 
     // render floor
     for(var k = 0; k < floors.length; k++)
@@ -345,20 +352,20 @@ function render()
         if(gameBoard.prevFriesMan.x === 0 || gameBoard.prevFriesMan.x === 20)
         {
             if(gameBoard.friesMan.currDir === WEST)
-                var xAmount = gameBoard.prevFriesMan.x - timer/10;
+                fries_x_amount = gameBoard.prevFriesMan.x - timer/10;
             else if(gameBoard.friesMan.currDir === EAST)
-                var xAmount = gameBoard.prevFriesMan.x + timer/10;
-            var yAmount = gameBoard.prevFriesMan.y;
+                fries_x_amount = gameBoard.prevFriesMan.x + timer/10;
+            fries_y_amount = gameBoard.prevFriesMan.y;
         }
         else
         {
-            var xAmount = gameBoard.prevFriesMan.x + (gameBoard.friesMan.x - gameBoard.prevFriesMan.x) * timer / 10;
-            var yAmount = gameBoard.prevFriesMan.y + (gameBoard.friesMan.y - gameBoard.prevFriesMan.y) * timer / 10;
+            fries_x_amount = gameBoard.prevFriesMan.x + (gameBoard.friesMan.x - gameBoard.prevFriesMan.x) * timer / 10;
+            fries_y_amount = gameBoard.prevFriesMan.y + (gameBoard.friesMan.y - gameBoard.prevFriesMan.y) * timer / 10;
         }
         objToWorldM = scale(0.3, 0.3, 1.5);
         var fRotation = getFriesmanRotation(gameBoard.friesMan.currDir);
         objToWorldM = mult(fRotation, objToWorldM);
-        objToWorldM = mult(translate(xAmount, yAmount, 0.25), objToWorldM);
+        objToWorldM = mult(translate(fries_x_amount, fries_y_amount, 0.25), objToWorldM);
         gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
         gl.uniformMatrix3fv(mNormalLoc, false, new flatten(mat4To3(mult(modelViewM, fRotation))));
         gl.uniform1i(objectIDLoc, 2);
@@ -370,9 +377,9 @@ function render()
         // render enemies
         for(var i = 0; i < 4; i++)
         {
-            var xAmount = gameBoard.prevEnemyArray[i].x + (gameBoard.enemyArray[i].x - gameBoard.prevEnemyArray[i].x) * timer / 10;
-            var yAmount = gameBoard.prevEnemyArray[i].y + (gameBoard.enemyArray[i].y - gameBoard.prevEnemyArray[i].y) * timer / 10;
-            objToWorldM = mult(translate(xAmount, yAmount, 0.0), scale(0.3, 0.3, 0.3));
+            enemy_x_amount = gameBoard.prevEnemyArray[i].x + (gameBoard.enemyArray[i].x - gameBoard.prevEnemyArray[i].x) * timer / 10;
+            enemy_y_amount = gameBoard.prevEnemyArray[i].y + (gameBoard.enemyArray[i].y - gameBoard.prevEnemyArray[i].y) * timer / 10;
+            objToWorldM = mult(translate(enemy_x_amount,enemy_y_amount, 0.0), scale(0.3, 0.3, 0.3));
             gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
             gl.uniform1i(objectIDLoc, 3);
             gl.drawArrays( gl.TRIANGLE_STRIP, num_floor_points+num_fire_points+num_cube_points+num_sphere_points+num_friesman_points, num_ring_points);        
@@ -420,26 +427,87 @@ function render()
     // render obstacle
     if (MOVED !== 0)
     {
-        rock.speed = add(rock.speed, rock.acceleration);
-        rock.position = add(rock.position, rock.speed);
+        rock1.speed = add(rock1.speed, rock1.acceleration);
+        rock1.position = add(rock1.position, rock1.speed);
+
+        rock2.speed = add(rock2.speed, rock2.acceleration);
+        rock2.position = add(rock2.position, rock2.speed);
+
+        gurimja1.position = vec3(rock1.position[0],rock1.position[1], -0.49);
+        gurimja2.position = vec3(rock2.position[0],rock2.position[1], -0.49);
     }
-    if(rock.position[2] <= 0.3)
+    if (rock1.position[0] <= fries_x_amount + 0.3 && rock1.position[0] >= fries_x_amount - 0.3 && rock1.position[1] <= fries_y_amount + 0.3 && rock1.position[1] >= fries_y_amount - 0.3)
     {
-        rock.speed = rock_init_speed;
-        rock.position = rock_init_position;
+        if(rock1.position[2] <= 1.75)
+        {
+            rock1.speed = rock1_init_speed;
+            rock1.position = rock1_init_position;
+
+            rock2.speed = rock2_init_speed;
+            rock2.position = rock2_init_position;
+
+            gurimja1.position = shade1_init_position;
+            gurimja2.position = shade2_init_position;
+
+        }
     }
-    objToWorldM = mult(translate(rock.position), scale(0.3, 0.3, 0.3));
+    else if(rock2.position[0] <= fries_x_amount + 0.3 && rock2.position[0] >= fries_x_amount - 0.3 && rock2.position[1] <= fries_y_amount + 0.3 && rock2.position[1] >= fries_y_amount - 0.3)
+    {
+        if(rock2.position[2] <= 1.75)
+        {
+            rock1.speed = rock1_init_speed;
+            rock1.position = rock1_init_position;
+
+            rock2.speed = rock2_init_speed;
+            rock2.position = rock2_init_position;
+
+            gurimja2.position = shade2_init_position;
+        }
+    }
+    else if(rock1.position[2] <= -0.2)
+    {
+        rock1.speed = rock1_init_speed;
+        rock1.position = rock1_init_position;
+
+        rock2.speed = rock2_init_speed;
+        rock2.position = rock2_init_position;
+
+        gurimja1.position = shade1_init_position;
+        gurimja2.position = shade1_init_position;     
+    }
+    total_distance = rock1_end_position[0]-rock1_init_position[0];
+    percent_moved = (rock1.position[0])/(total_distance);
+    shade_scale_factor = 4*(percent_moved/5);
+
+
+    objToWorldM = mult(translate(rock1.position), scale(0.3, 0.3, 0.3));
     gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
     gl.uniform1i(objectIDLoc, 7);
     gl.drawArrays(gl.TRIANGLES, num_floor_points+num_fire_points+num_cube_points+num_sphere_points+num_friesman_points+num_ring_points+num_stick_points, num_obstacle_points);
+
+    objToWorldM = mult(translate(rock2.position), scale(0.3, 0.3, 0.3));
+    gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
+    gl.uniform1i(objectIDLoc, 7);
+    gl.drawArrays(gl.TRIANGLES, num_floor_points+num_fire_points+num_cube_points+num_sphere_points+num_friesman_points+num_ring_points+num_stick_points, num_obstacle_points);
+
+    objToWorldM = mult(translate(gurimja1.position), scale(0.3*(0.4 + shade_scale_factor),0.3*(0.4 + shade_scale_factor), 0));
+    gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
+    gl.uniform1i(objectIDLoc, 8);
+    gl.drawArrays(gl.TRIANGLES, num_floor_points+num_fire_points+num_cube_points+num_sphere_points+num_friesman_points+num_ring_points+num_stick_points+num_obstacle_points, num_shade_points);
+
+    objToWorldM = mult(translate(gurimja2.position), scale(0.3*(0.4 + shade_scale_factor),0.3*(0.4 + shade_scale_factor), 0));
+    gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
+    gl.uniform1i(objectIDLoc, 8);
+    gl.drawArrays(gl.TRIANGLES, num_floor_points+num_fire_points+num_cube_points+num_sphere_points+num_friesman_points+num_ring_points+num_stick_points+num_obstacle_points, num_shade_points);
+    
 
     gl.enable( gl.BLEND );
     gl.blendFunc( gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA );
     gl.depthMask( false );
     objToWorldM = translate(door[0]);
     gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
-    gl.uniform1i(objectIDLoc, 8);
-    gl.drawArrays( gl.TRIANGLES, num_fire_points, num_cube_points);
+    gl.uniform1i(objectIDLoc, 9);
+    gl.drawArrays( gl.TRIANGLES, 0, num_cube_points);
     gl.depthMask( true );
     gl.disable( gl.BLEND );
 
