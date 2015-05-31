@@ -5,6 +5,8 @@ var BLANK_SPACE = 'x';
 var DOOR = 'd'
 var WALL = 'o';
 var MOVED = -1;
+var MOVE_FRIESMAN = 0;
+var MOVE_ENEMY = 1;
 
 function Board()
 {
@@ -190,7 +192,6 @@ Board.prototype.move = function(type, number)
 						this.friesMan.currDir = dir;
 					return;
 				// 	this.die();
-					return;
 				}
 			}
 		}
@@ -575,8 +576,7 @@ Board.prototype.move = function(type, number)
 				else if(this.mapArray[nextY][nextX] === 'F')		// enemy has killed Friesman
 				{
 					this.mapArray[currY][currX] = this.prevState[number];
-					this.prevState[number] = this.mapArray[nextY][nextX];
-					this.mapArray[nextY][nextX] = currChar;
+					// this.mapArray[nextY][nextX] = currChar;
 					this.enemyArray[number].x += (nextX - currX);
 					this.enemyArray[number].y += (nextY - currY);
 					

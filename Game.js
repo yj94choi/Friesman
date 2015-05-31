@@ -21,9 +21,6 @@ var walls = [];
 var ketchups = [];
 var cellSize = 1;
 
-var MOVE_FRIESMAN = 0;
-var MOVE_ENEMY = 1;
-
 var num_cube_points = 0;
 var num_sphere_points = 0;
 var num_friesman_points = 0;
@@ -41,27 +38,19 @@ var rock1;
 var rock1_init_position = vec3(0,11,20);
 var rock1_init_speed = vec3(0.0375, 0.00, 0.05);
 var rock1_end_position = vec3(5,11,0);
-
 var rock2;
 var rock2_init_position = vec3(20,11,20);
 var rock2_init_speed = vec3(-0.0375,0.00,0.05);
 var rock2_end_position = vec3(15,11,0);
-
-var gurimja1;
+var shade1;
 var shade1_init_position = vec3(rock1_init_position[0],rock1_init_position[1], -0.49);
-
-var gurimja2;
+var shade2;
 var shade2_init_position = vec3(rock2_init_position[0],rock2_init_position[1], -0.49);
-
-var total_distance;
-var percent_moved;
-var shade_scale_factor = 0;
 
 var door = [];
 
 var fries_x_amount;
 var fries_y_amount;
-
 var enemy_x_amount;
 var enemy_y_amount;
 
@@ -81,8 +70,8 @@ window.onload = function init()
     //obstacle
     rock1 = new ObstacleObject(rock1_init_position, rock1_init_speed, vec3(0.0, 0.0, -0.003));
     rock2 = new ObstacleObject(rock2_init_position, rock2_init_speed,vec3(0.0,0.0,-0.003));
-    gurimja1 = new ShadeObject(shade1_init_position);
-    gurimja2 = new ShadeObject(shade2_init_position);
+    shade1 = new ShadeObject(shade1_init_position);
+    shade2 = new ShadeObject(shade2_init_position);
 
     for ( var x = 0; x < 21; x++)
     {
@@ -126,10 +115,10 @@ window.onload = function init()
     cube2(stickVertices);
     num_stick_points = points.length - num_fire_points - num_cube_points - num_floor_points - num_friesman_points - num_sphere_points - num_ring_points;
     //obstacle
-    obstacle(2, false);
+    ketchupdot(2, false);   // low complexity sphere for rocks
     num_obstacle_points = points.length - num_fire_points - num_cube_points - num_floor_points - num_friesman_points - num_sphere_points - num_ring_points - num_stick_points;
     //shade
-    shade(4, false);
+    ketchupdot(4, false);   // higher complexity sphere for shade
     num_shade_points = points.length - num_fire_points - num_cube_points - num_floor_points - num_friesman_points - num_sphere_points - num_ring_points - num_stick_points - num_obstacle_points;
 
     window.onkeydown = function(input)
@@ -421,59 +410,44 @@ function render()
     // render obstacle
     if (MOVED !== 0)
     {
+        // update the position of the rocks and their shade using physics
         rock1.speed = add(rock1.speed, rock1.acceleration);
         rock1.position = add(rock1.position, rock1.speed);
 
         rock2.speed = add(rock2.speed, rock2.acceleration);
         rock2.position = add(rock2.position, rock2.speed);
 
-        gurimja1.position = vec3(rock1.position[0],rock1.position[1], -0.49);
-        gurimja2.position = vec3(rock2.position[0],rock2.position[1], -0.49);
+        shade1.position = vec3(rock1.position[0], rock1.position[1], -0.49);
+        shade2.position = vec3(rock2.position[0], rock2.position[1], -0.49);
     }
-    if (rock1.position[0] <= fries_x_amount + 0.3 && rock1.position[0] >= fries_x_amount - 0.3 && rock1.position[1] <= fries_y_amount + 0.3 && rock1.position[1] >= fries_y_amount - 0.3)
+    if (rock1.hasCollided(fries_x_amount, fries_y_amount, 1.75))
     {
-        if(rock1.position[2] <= 1.75)
-        {
-            rock1.speed = rock1_init_speed;
-            rock1.position = rock1_init_position;
-
-            rock2.speed = rock2_init_speed;
-            rock2.position = rock2_init_position;
-
-            gurimja1.position = shade1_init_position;
-            gurimja2.position = shade2_init_position;
-
-        }
+        rock1.set(rock1_init_position, rock1_init_speed);
+        rock2.set(rock2_init_position, rock2_init_speed);
+        shade1.set(shade1_init_position);
+        shade2.set(shade2_init_position);
+        gameBoard.die();
     }
-    else if(rock2.position[0] <= fries_x_amount + 0.3 && rock2.position[0] >= fries_x_amount - 0.3 && rock2.position[1] <= fries_y_amount + 0.3 && rock2.position[1] >= fries_y_amount - 0.3)
+    else if(rock2.hasCollided(fries_x_amount, fries_y_amount, 1.75))
     {
-        if(rock2.position[2] <= 1.75)
-        {
-            rock1.speed = rock1_init_speed;
-            rock1.position = rock1_init_position;
-
-            rock2.speed = rock2_init_speed;
-            rock2.position = rock2_init_position;
-
-            gurimja2.position = shade2_init_position;
-        }
+        rock1.set(rock1_init_position, rock1_init_speed);
+        rock2.set(rock2_init_position, rock2_init_speed);
+        shade1.set(shade1_init_position);
+        shade2.set(shade2_init_position);
+        gameBoard.die();
     }
-    else if(rock1.position[2] <= -0.2)
+    else if(rock1.position[2] <= -0.2)  // if rocks reached the bottom of the map
     {
-        rock1.speed = rock1_init_speed;
-        rock1.position = rock1_init_position;
-
-        rock2.speed = rock2_init_speed;
-        rock2.position = rock2_init_position;
-
-        gurimja1.position = shade1_init_position;
-        gurimja2.position = shade1_init_position;     
+        rock1.set(rock1_init_position, rock1_init_speed);
+        rock2.set(rock2_init_position, rock2_init_speed);
+        shade1.set(shade1_init_position);
+        shade2.set(shade2_init_position);
     }
-    total_distance = rock1_end_position[0]-rock1_init_position[0];
-    percent_moved = (rock1.position[0])/(total_distance);
-    shade_scale_factor = 4*(percent_moved/5);
+    var total_distance = rock1_end_position[0] - rock1_init_position[0];
+    var percent_moved = (rock1.position[0])/(total_distance);
+    var shade_scale_factor = 4*(percent_moved/5);
 
-
+    // render rocks and shades
     objToWorldM = mult(translate(rock1.position), scale(0.3, 0.3, 0.3));
     gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
     gl.uniform1i(objectIDLoc, 7);
@@ -484,12 +458,12 @@ function render()
     gl.uniform1i(objectIDLoc, 7);
     gl.drawArrays(gl.TRIANGLES, num_floor_points+num_fire_points+num_cube_points+num_sphere_points+num_friesman_points+num_ring_points+num_stick_points, num_obstacle_points);
 
-    objToWorldM = mult(translate(gurimja1.position), scale(0.3*(0.4 + shade_scale_factor),0.3*(0.4 + shade_scale_factor), 0));
+    objToWorldM = mult(translate(shade1.position), scale(0.3*(0.4 + shade_scale_factor),0.3*(0.4 + shade_scale_factor), 0));
     gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
     gl.uniform1i(objectIDLoc, 8);
     gl.drawArrays(gl.TRIANGLES, num_floor_points+num_fire_points+num_cube_points+num_sphere_points+num_friesman_points+num_ring_points+num_stick_points+num_obstacle_points, num_shade_points);
 
-    objToWorldM = mult(translate(gurimja2.position), scale(0.3*(0.4 + shade_scale_factor),0.3*(0.4 + shade_scale_factor), 0));
+    objToWorldM = mult(translate(shade2.position), scale(0.3*(0.4 + shade_scale_factor),0.3*(0.4 + shade_scale_factor), 0));
     gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
     gl.uniform1i(objectIDLoc, 8);
     gl.drawArrays(gl.TRIANGLES, num_floor_points+num_fire_points+num_cube_points+num_sphere_points+num_friesman_points+num_ring_points+num_stick_points+num_obstacle_points, num_shade_points);
