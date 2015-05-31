@@ -67,6 +67,7 @@ var enemy_y_amount;
 
 // for debugging
 var disable_enemy = false;
+var anim_speed = 10;    // smaller number -> faster animation
 
 window.onload = function init()
 {
@@ -234,15 +235,15 @@ function getModelView(index)
     if(gameBoard.prevFriesMan.x === 0 || gameBoard.prevFriesMan.x === 20)
     {
         if(gameBoard.friesMan.currDir === WEST)
-            var xAmount = gameBoard.prevFriesMan.x - timer/15;
+            var xAmount = gameBoard.prevFriesMan.x - timer/anim_speed;
         else if(gameBoard.friesMan.currDir === EAST)
-            var xAmount = gameBoard.prevFriesMan.x + timer/15;
+            var xAmount = gameBoard.prevFriesMan.x + timer/anim_speed;
         var yAmount = gameBoard.prevFriesMan.y;
     }
     else
     {
-        var xAmount = gameBoard.prevFriesMan.x + (gameBoard.friesMan.x - gameBoard.prevFriesMan.x) * timer / 15;
-        var yAmount = gameBoard.prevFriesMan.y + (gameBoard.friesMan.y - gameBoard.prevFriesMan.y) * timer / 15;
+        var xAmount = gameBoard.prevFriesMan.x + (gameBoard.friesMan.x - gameBoard.prevFriesMan.x) * timer / anim_speed;
+        var yAmount = gameBoard.prevFriesMan.y + (gameBoard.friesMan.y - gameBoard.prevFriesMan.y) * timer / anim_speed;
     }
     var reverseTranslation = translate(-xAmount, -yAmount, 0.0);
 
@@ -290,7 +291,7 @@ function render()
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     // TODO: USE A REAL TIMER
-    if(timer%15 === 0)
+    if(timer%anim_speed === 0)
     {
         gameBoard.move(MOVE_FRIESMAN, 0);
         if(!disable_enemy)
@@ -343,15 +344,15 @@ function render()
     if(gameBoard.prevFriesMan.x === 0 || gameBoard.prevFriesMan.x === 20)
     {
         if(gameBoard.friesMan.currDir === WEST)
-            fries_x_amount = gameBoard.prevFriesMan.x - timer/15;
+            fries_x_amount = gameBoard.prevFriesMan.x - timer/anim_speed;
         else if(gameBoard.friesMan.currDir === EAST)
-            fries_x_amount = gameBoard.prevFriesMan.x + timer/15;
+            fries_x_amount = gameBoard.prevFriesMan.x + timer/anim_speed;
         fries_y_amount = gameBoard.prevFriesMan.y;
     }
     else
     {
-        fries_x_amount = gameBoard.prevFriesMan.x + (gameBoard.friesMan.x - gameBoard.prevFriesMan.x) * timer / 15;
-        fries_y_amount = gameBoard.prevFriesMan.y + (gameBoard.friesMan.y - gameBoard.prevFriesMan.y) * timer / 15;
+        fries_x_amount = gameBoard.prevFriesMan.x + (gameBoard.friesMan.x - gameBoard.prevFriesMan.x) * timer / anim_speed;
+        fries_y_amount = gameBoard.prevFriesMan.y + (gameBoard.friesMan.y - gameBoard.prevFriesMan.y) * timer / anim_speed;
     }
     objToWorldM = scale(0.3, 0.3, 1.5);
     var fRotation = getFriesmanRotation(gameBoard.friesMan.currDir);
@@ -368,8 +369,8 @@ function render()
     // render enemies
     for(var i = 0; i < 4; i++)
     {
-        enemy_x_amount = gameBoard.prevEnemyArray[i].x + (gameBoard.enemyArray[i].x - gameBoard.prevEnemyArray[i].x) * timer / 15;
-        enemy_y_amount = gameBoard.prevEnemyArray[i].y + (gameBoard.enemyArray[i].y - gameBoard.prevEnemyArray[i].y) * timer / 15;
+        enemy_x_amount = gameBoard.prevEnemyArray[i].x + (gameBoard.enemyArray[i].x - gameBoard.prevEnemyArray[i].x) * timer / anim_speed;
+        enemy_y_amount = gameBoard.prevEnemyArray[i].y + (gameBoard.enemyArray[i].y - gameBoard.prevEnemyArray[i].y) * timer / anim_speed;
         objToWorldM = mult(translate(enemy_x_amount,enemy_y_amount, 0.0), scale(0.3, 0.3, 0.3));
         gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
         gl.uniform1i(objectIDLoc, 3);
