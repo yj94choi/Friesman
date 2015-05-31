@@ -275,6 +275,14 @@ function getFriesmanRotation(dir)
         return rotate(90, vec3(0,0,1));
 }
 
+function resetObstacles()
+{
+    rock1.set(rock1_init_position, rock1_init_speed);
+    rock2.set(rock2_init_position, rock2_init_speed);
+    shade1.set(shade1_init_position);
+    shade2.set(shade2_init_position);
+}
+
 function render() 
 {
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -366,7 +374,10 @@ function render()
         gl.drawArrays( gl.TRIANGLE_STRIP, num_floor_points+num_fire_points+num_cube_points+num_sphere_points+num_friesman_points, num_ring_points);
 
         if(Math.abs(enemy_x_amount-fries_x_amount) <= 0.2 && Math.abs(enemy_y_amount-fries_y_amount) <= 0.2)
+        {
+            resetObstacles();
             gameBoard.die();
+        }
     }
 
     //render enemies testing version
@@ -422,26 +433,17 @@ function render()
     }
     if (rock1.hasCollided(fries_x_amount, fries_y_amount, 1.75))
     {
-        rock1.set(rock1_init_position, rock1_init_speed);
-        rock2.set(rock2_init_position, rock2_init_speed);
-        shade1.set(shade1_init_position);
-        shade2.set(shade2_init_position);
+        resetObstacles();
         gameBoard.die();
     }
     else if(rock2.hasCollided(fries_x_amount, fries_y_amount, 1.75))
     {
-        rock1.set(rock1_init_position, rock1_init_speed);
-        rock2.set(rock2_init_position, rock2_init_speed);
-        shade1.set(shade1_init_position);
-        shade2.set(shade2_init_position);
+        resetObstacles();
         gameBoard.die();
     }
     else if(rock1.position[2] <= -0.2)  // if rocks reached the bottom of the map
     {
-        rock1.set(rock1_init_position, rock1_init_speed);
-        rock2.set(rock2_init_position, rock2_init_speed);
-        shade1.set(shade1_init_position);
-        shade2.set(shade2_init_position);
+        resetObstacles();
     }
     var total_distance = rock1_end_position[0] - rock1_init_position[0];
     var percent_moved = (rock1.position[0])/(total_distance);
