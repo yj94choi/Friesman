@@ -61,6 +61,10 @@ window.onload = function init()
             {
                 walls.push( vec3(x*cellSize, y*cellSize, 0) );
             }
+            if (!(gameBoard.mapArray[y][x] === BLANK_SPACE || gameBoard.mapArray[y][x] === WALL ) )
+            {
+                floors.push( vec3(x*cellSize, y*cellSize, 0) );
+            }
         }
     }
 
@@ -316,7 +320,7 @@ function render()
     // render floor
     for(var k = 0; k < floors.length; k++)
     {
-        objToWorldM = floors[k];
+        objToWorldM = translate(floors[k]);
         gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
 
         gl.uniform1i(objectIDLoc, 6);

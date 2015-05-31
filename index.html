@@ -59,9 +59,11 @@ main()
 {
 	vec4 objColor;
 	if(objectID == 0)
+		//objColor = vec4(0.98, 0.2667, 0.2667, 1.0);
 		objColor = texture2D(texture1, fTexCoord);
 	if(objectID == 1)
-		objColor = vec4(1.0, 0.0, 0.0, 1.0);
+		objColor = vec4(0.9765, 0.6667, 0.5333, 1.0);
+		//objColor = vec4(1.0, 0.0, 0.0, 1.0);
 	if(objectID == 2)
 		objColor = texture2D(texture3, fTexCoord);
 	if(objectID == 3)
@@ -114,7 +116,7 @@ main()
 
 <img id="fire" src="fire2.jpeg" hidden></img>
 <img id="brick" src="stonebrick.jpeg" hidden></img>
-<img id="logo" src="mcdonald.png" hidden></img>
+<img id="logo" src="tile.png" hidden></img>
 <img id="friesman" src="friesman.jpeg" hidden></img>
 
 <body>
