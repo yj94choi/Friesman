@@ -55,9 +55,6 @@ function Board()
 	['x', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'x']  // 20
 	];
 
-	// check if friesMan has died
-	this.died = false;
-
 	this.power = false;
 
 	// stores the previous value of the map
@@ -78,6 +75,51 @@ Board.prototype.display = function()
 		}
 		// console.log(temp);
 	}
+}
+
+Board.prototype.die = function()
+{
+	// 	var whichEnemy = parseInt(this.mapArray[nextY][nextX]);
+ 	this.mapArray[this.friesMan.y][this.friesMan.x] = ROAD_EMPTY;
+	// 	this.mapArray[nextY][nextX] = this.prevState[whichEnemy];
+
+	for (var i = 0; i < 4; i++)
+	{
+		var enemyY = this.enemyArray[i].y;
+		var enemyX = this.enemyArray[i].x;
+		if (isEnemy(this.prevState[i]))
+			this.mapArray[enemyY][enemyX] = ROAD_EMPTY;
+		else
+			this.mapArray[enemyY][enemyX] = this.prevState[i];
+		this.prevState[i] = ROAD_EMPTY;
+	}
+
+	this.mapArray[13][10] = '0';
+	this.mapArray[11][9] = '1';
+	this.mapArray[11][10] = '2';
+	this.mapArray[11][11] = '3';
+	this.mapArray[5][10] = 'F';
+
+	// creating enemies inside of the map
+	this.enemyArray = [new Enemy(DUMB_ENEMY, 10, 13, WEST, true),
+					   new Enemy(DUMB_ENEMY, 9, 11, EAST, false),
+					   new Enemy(DUMB_ENEMY, 10, 11, NORTH, false),
+					   new Enemy(SMART_ENEMY, 11, 11, WEST, false)];
+
+	// creating Friesman
+	this.friesMan = new Friesman(10, 5, NORTH);
+
+	this.prevEnemyArray = [new Enemy(DUMB_ENEMY, 10, 13, WEST, true),
+						   new Enemy(DUMB_ENEMY, 9, 11, EAST, false),
+						   new Enemy(DUMB_ENEMY, 10, 11, NORTH, false),
+						   new Enemy(SMART_ENEMY, 11, 11, WEST, false)]
+
+    this.prevFriesMan = new Friesman(10, 5, NORTH);
+
+    this.power = false;
+	MOVED = -1;
+	this.diedAudio.play();
+	return;
 }
 
 // type is either Friesman (0) or Enemy (1), number specifies the ID of the enemy
@@ -140,46 +182,14 @@ Board.prototype.move = function(type, number)
 				}
 				else if(this.mapArray[nextY][nextX] === '0' || this.mapArray[nextY][nextX] === '1' || this.mapArray[nextY][nextX] === '2' || this.mapArray[nextY][nextX] === '3')
 				{
-				// 	var whichEnemy = parseInt(this.mapArray[nextY][nextX]);
-				 	this.mapArray[currY][currX] = ROAD_EMPTY;
-				// 	this.mapArray[nextY][nextX] = this.prevState[whichEnemy];
-
-					for (var i = 0; i < 4; i++)
-					{
-						var enemyY = this.enemyArray[i].y;
-						var enemyX = this.enemyArray[i].x;
-						if (isEnemy(this.prevState[i]))
-							this.mapArray[enemyY][enemyX] = ROAD_EMPTY;
-						else
-							this.mapArray[enemyY][enemyX] = this.prevState[i];
-						this.prevState[i] = ROAD_EMPTY;
-					}
-
-					this.mapArray[13][10] = '0';
-					this.mapArray[11][9] = '1';
-					this.mapArray[11][10] = '2';
-					this.mapArray[11][11] = '3';
-					this.mapArray[5][10] = 'F';
-
-					// creating enemies inside of the map
-					this.enemyArray = [new Enemy(DUMB_ENEMY, 10, 13, WEST, true),
-									   new Enemy(DUMB_ENEMY, 9, 11, EAST, false),
-									   new Enemy(DUMB_ENEMY, 10, 11, NORTH, false),
-									   new Enemy(SMART_ENEMY, 11, 11, WEST, false)];
-
-					// creating Friesman
-					this.friesMan = new Friesman(10, 5, NORTH);
-
-					this.prevEnemyArray = [new Enemy(DUMB_ENEMY, 10, 13, WEST, true),
-										   new Enemy(DUMB_ENEMY, 9, 11, EAST, false),
-										   new Enemy(DUMB_ENEMY, 10, 11, NORTH, false),
-										   new Enemy(SMART_ENEMY, 11, 11, WEST, false)]
-
-				    this.prevFriesMan = new Friesman(10, 5, NORTH);
-
-					MOVED = -1;
-					this.died = true;
-					this.diedAudio.play();
+					this.mapArray[currY][currX] = ROAD_EMPTY;	// mark the point as visited
+					this.mapArray[nextY][nextX] = 'F';			// mark the next point as Friesman
+					this.friesMan.x += (nextX - currX);			// update Friesman's position
+					this.friesMan.y += (nextY - currY);
+					if(i === 0)
+						this.friesMan.currDir = dir;
+					return;
+				// 	this.die();
 					return;
 				}
 			}
@@ -564,45 +574,14 @@ Board.prototype.move = function(type, number)
 				}
 				else if(this.mapArray[nextY][nextX] === 'F')		// enemy has killed Friesman
 				{
-					this.mapArray[nextY][nextX] = ROAD_EMPTY;
+					this.mapArray[currY][currX] = this.prevState[number];
+					this.prevState[number] = this.mapArray[nextY][nextX];
+					this.mapArray[nextY][nextX] = currChar;
+					this.enemyArray[number].x += (nextX - currX);
+					this.enemyArray[number].y += (nextY - currY);
 					
-					for (var i = 0; i < 4; i++)
-					{
-						var enemyY = this.enemyArray[i].y;
-						var enemyX = this.enemyArray[i].x;
-						if (isEnemy(this.prevState[i]))
-							this.mapArray[enemyY][enemyX] = ROAD_EMPTY;
-						else
-							this.mapArray[enemyY][enemyX] = this.prevState[i];
-						this.prevState[i] = ROAD_EMPTY;
-					}
-
-					this.mapArray[13][10] = '0';
-					this.mapArray[11][9] = '1';
-					this.mapArray[11][10] = '2';
-					this.mapArray[11][11] = '3';
-					this.mapArray[5][10] = 'F';
-
-					// creating enemies inside of the map
-					this.enemyArray = [new Enemy(DUMB_ENEMY, 10, 13, WEST, true),
-									   new Enemy(DUMB_ENEMY, 9, 11, EAST, false),
-									   new Enemy(DUMB_ENEMY, 10, 11, NORTH, false),
-									   new Enemy(SMART_ENEMY, 11, 11, WEST, false)];
-
-					// creating Friesman
-					this.friesMan = new Friesman(10, 5, NORTH);
-
-					this.prevEnemyArray = [new Enemy(DUMB_ENEMY, 10, 13, WEST, true),
-										   new Enemy(DUMB_ENEMY, 9, 11, EAST, false),
-										   new Enemy(DUMB_ENEMY, 10, 11, NORTH, false),
-										   new Enemy(SMART_ENEMY, 11, 11, WEST, false)]
-
-				    this.prevFriesMan = new Friesman(10, 5, NORTH);
-
-					MOVED = -1;
-					this.died = true;
-					this.diedAudio.play();
 					repeat = false;
+					// this.die();
 				}
 				else
 				{

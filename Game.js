@@ -234,15 +234,15 @@ function getModelView(index)
     if(gameBoard.prevFriesMan.x === 0 || gameBoard.prevFriesMan.x === 20)
     {
         if(gameBoard.friesMan.currDir === WEST)
-            var xAmount = gameBoard.prevFriesMan.x - timer/10;
+            var xAmount = gameBoard.prevFriesMan.x - timer/15;
         else if(gameBoard.friesMan.currDir === EAST)
-            var xAmount = gameBoard.prevFriesMan.x + timer/10;
+            var xAmount = gameBoard.prevFriesMan.x + timer/15;
         var yAmount = gameBoard.prevFriesMan.y;
     }
     else
     {
-        var xAmount = gameBoard.prevFriesMan.x + (gameBoard.friesMan.x - gameBoard.prevFriesMan.x) * timer / 10;
-        var yAmount = gameBoard.prevFriesMan.y + (gameBoard.friesMan.y - gameBoard.prevFriesMan.y) * timer / 10;
+        var xAmount = gameBoard.prevFriesMan.x + (gameBoard.friesMan.x - gameBoard.prevFriesMan.x) * timer / 15;
+        var yAmount = gameBoard.prevFriesMan.y + (gameBoard.friesMan.y - gameBoard.prevFriesMan.y) * timer / 15;
     }
     var reverseTranslation = translate(-xAmount, -yAmount, 0.0);
 
@@ -290,14 +290,12 @@ function render()
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     // TODO: USE A REAL TIMER
-    if(timer%10 === 0)
+    if(timer%15 === 0)
     {
         gameBoard.move(MOVE_FRIESMAN, 0);
         if(!disable_enemy)
             for (var i = 0; i < 4; i++)
             {
-                if (gameBoard.died)
-                    break;
                 gameBoard.move(MOVE_ENEMY, i);
             }
         if(MOVED < 20)
@@ -341,65 +339,60 @@ function render()
         gl.drawArrays( gl.TRIANGLES, num_fire_points+num_cube_points, num_floor_points );
     }
 
-    if(gameBoard.died)
+    // render friesman
+    if(gameBoard.prevFriesMan.x === 0 || gameBoard.prevFriesMan.x === 20)
     {
-        gameBoard.died = false;
-        gl.disableVertexAttribArray( vTexCoord );
+        if(gameBoard.friesMan.currDir === WEST)
+            fries_x_amount = gameBoard.prevFriesMan.x - timer/15;
+        else if(gameBoard.friesMan.currDir === EAST)
+            fries_x_amount = gameBoard.prevFriesMan.x + timer/15;
+        fries_y_amount = gameBoard.prevFriesMan.y;
     }
     else
     {
-        // render friesman
-        if(gameBoard.prevFriesMan.x === 0 || gameBoard.prevFriesMan.x === 20)
-        {
-            if(gameBoard.friesMan.currDir === WEST)
-                fries_x_amount = gameBoard.prevFriesMan.x - timer/10;
-            else if(gameBoard.friesMan.currDir === EAST)
-                fries_x_amount = gameBoard.prevFriesMan.x + timer/10;
-            fries_y_amount = gameBoard.prevFriesMan.y;
-        }
-        else
-        {
-            fries_x_amount = gameBoard.prevFriesMan.x + (gameBoard.friesMan.x - gameBoard.prevFriesMan.x) * timer / 10;
-            fries_y_amount = gameBoard.prevFriesMan.y + (gameBoard.friesMan.y - gameBoard.prevFriesMan.y) * timer / 10;
-        }
-        objToWorldM = scale(0.3, 0.3, 1.5);
-        var fRotation = getFriesmanRotation(gameBoard.friesMan.currDir);
-        objToWorldM = mult(fRotation, objToWorldM);
-        objToWorldM = mult(translate(fries_x_amount, fries_y_amount, 0.25), objToWorldM);
-        gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
-        gl.uniformMatrix3fv(mNormalLoc, false, new flatten(mat4To3(mult(modelViewM, fRotation))));
-        gl.uniform1i(objectIDLoc, 2);
-        gl.drawArrays( gl.TRIANGLES, num_floor_points+num_fire_points+num_cube_points, num_friesman_points);
-
-        gl.disableVertexAttribArray( vTexCoord );
-        gl.uniformMatrix3fv(mNormalLoc, false, new flatten(mat4To3(modelViewM)));
-
-        // render enemies
-        for(var i = 0; i < 4; i++)
-        {
-            enemy_x_amount = gameBoard.prevEnemyArray[i].x + (gameBoard.enemyArray[i].x - gameBoard.prevEnemyArray[i].x) * timer / 10;
-            enemy_y_amount = gameBoard.prevEnemyArray[i].y + (gameBoard.enemyArray[i].y - gameBoard.prevEnemyArray[i].y) * timer / 10;
-            objToWorldM = mult(translate(enemy_x_amount,enemy_y_amount, 0.0), scale(0.3, 0.3, 0.3));
-            gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
-            gl.uniform1i(objectIDLoc, 3);
-            gl.drawArrays( gl.TRIANGLE_STRIP, num_floor_points+num_fire_points+num_cube_points+num_sphere_points+num_friesman_points, num_ring_points);        
-        }
-
-        //render enemies testing version
-        // for(var x = 0; x < 21; x++)
-        // {
-        //     for(var y = 0; y < 21; y++)
-        //     {
-        //         if(gameBoard.mapArray[y][x] === '0' || gameBoard.mapArray[y][x] === '1' || gameBoard.mapArray[y][x] === '2' || gameBoard.mapArray[y][x] === '3')
-        //         {
-        //             objToWorldM = mult(translate(x, y, 0.0), scale(0.3, 0.3, 0.3));
-        //             gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
-        //             gl.uniform1i(objectIDLoc, 3);
-        //             gl.drawArrays( gl.TRIANGLE_STRIP, num_fire_points+num_cube_points+num_sphere_points+num_friesman_points, num_ring_points);                        
-        //         }
-        //     }
-        // }
+        fries_x_amount = gameBoard.prevFriesMan.x + (gameBoard.friesMan.x - gameBoard.prevFriesMan.x) * timer / 15;
+        fries_y_amount = gameBoard.prevFriesMan.y + (gameBoard.friesMan.y - gameBoard.prevFriesMan.y) * timer / 15;
     }
+    objToWorldM = scale(0.3, 0.3, 1.5);
+    var fRotation = getFriesmanRotation(gameBoard.friesMan.currDir);
+    objToWorldM = mult(fRotation, objToWorldM);
+    objToWorldM = mult(translate(fries_x_amount, fries_y_amount, 0.25), objToWorldM);
+    gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
+    gl.uniformMatrix3fv(mNormalLoc, false, new flatten(mat4To3(mult(modelViewM, fRotation))));
+    gl.uniform1i(objectIDLoc, 2);
+    gl.drawArrays( gl.TRIANGLES, num_floor_points+num_fire_points+num_cube_points, num_friesman_points);
+
+    gl.disableVertexAttribArray( vTexCoord );
+    gl.uniformMatrix3fv(mNormalLoc, false, new flatten(mat4To3(modelViewM)));
+
+    // render enemies
+    for(var i = 0; i < 4; i++)
+    {
+        enemy_x_amount = gameBoard.prevEnemyArray[i].x + (gameBoard.enemyArray[i].x - gameBoard.prevEnemyArray[i].x) * timer / 15;
+        enemy_y_amount = gameBoard.prevEnemyArray[i].y + (gameBoard.enemyArray[i].y - gameBoard.prevEnemyArray[i].y) * timer / 15;
+        objToWorldM = mult(translate(enemy_x_amount,enemy_y_amount, 0.0), scale(0.3, 0.3, 0.3));
+        gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
+        gl.uniform1i(objectIDLoc, 3);
+        gl.drawArrays( gl.TRIANGLE_STRIP, num_floor_points+num_fire_points+num_cube_points+num_sphere_points+num_friesman_points, num_ring_points);
+
+        if(Math.abs(enemy_x_amount-fries_x_amount) <= 0.2 && Math.abs(enemy_y_amount-fries_y_amount) <= 0.2)
+            gameBoard.die();
+    }
+
+    //render enemies testing version
+    // for(var x = 0; x < 21; x++)
+    // {
+    //     for(var y = 0; y < 21; y++)
+    //     {
+    //         if(gameBoard.mapArray[y][x] === '0' || gameBoard.mapArray[y][x] === '1' || gameBoard.mapArray[y][x] === '2' || gameBoard.mapArray[y][x] === '3')
+    //         {
+    //             objToWorldM = mult(translate(x, y, 0.0), scale(0.3, 0.3, 0.3));
+    //             gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
+    //             gl.uniform1i(objectIDLoc, 3);
+    //             gl.drawArrays( gl.TRIANGLE_STRIP, num_fire_points+num_cube_points+num_sphere_points+num_friesman_points, num_ring_points);                        
+    //         }
+    //     }
+    // }
 
     // render spheres (ketchup dots)
     for ( var x = 2; x < 19; x++)
