@@ -61,7 +61,7 @@ window.onload = function init()
             {
                 walls.push( vec3(x*cellSize, y*cellSize, 0) );
             }
-            if (!(gameBoard.mapArray[y][x] === BLANK_SPACE || gameBoard.mapArray[y][x] === WALL ) )
+            else if (!(gameBoard.mapArray[y][x] === BLANK_SPACE || gameBoard.mapArray[y][x] === WALL ) )
             {
                 floors.push( vec3(x*cellSize, y*cellSize, 0) );
             }
@@ -314,7 +314,7 @@ function render()
         gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
         
         gl.uniform1i(objectIDLoc, 0);
-        gl.drawArrays( gl.TRIANGLE_STRIP, num_fire_points, num_cube_points);
+        gl.drawArrays( gl.TRIANGLES, num_fire_points, num_cube_points);
     }
 
     // render floor

@@ -8,9 +8,9 @@ var MOVED = -1;
 
 function Board()
 {
-	this.startAudio = new Audio('start.mp3');
+	this.startAudio = new Audio('audio/start.mp3');
 	this.startAudio.play();
-	this.diedAudio = new Audio('nonono.mp3');
+	this.diedAudio = new Audio('audio/nonono.mp3');
 	// creating enemies inside of the map
 	this.enemyArray = [new Enemy(DUMB_ENEMY, 10, 13, WEST, true),
 					   new Enemy(DUMB_ENEMY, 9, 11, EAST, false),
