@@ -59,6 +59,8 @@ function Board()
 
 	this.power = false;
 
+	this.movedArray = [10, 10, 10, 10];
+
 	// stores the previous value of the map
 	this.prevState = [ROAD_EMPTY, ROAD_EMPTY, ROAD_EMPTY, ROAD_EMPTY];
 	this.score = 0;
@@ -121,7 +123,42 @@ Board.prototype.die = function()
     this.power = false;
 	MOVED = -1;
 	this.diedAudio.play();
-	return;
+}
+
+Board.prototype.killEnemy = function(enemyID)
+{
+	var enemyY = this.enemyArray[enemyID].y;
+	var enemyX = this.enemyArray[enemyID].x;
+	this.mapArray[enemyY][enemyX] = this.prevState[enemyID];
+	this.prevState[enemyID] = ROAD_EMPTY;
+
+	switch(enemyID)
+	{
+		case 0:
+			this.mapArray[13][10] = '0';
+			this.enemyArray[enemyID] = new Enemy(DUMB_ENEMY, 10, 13, WEST, true);
+			this.prevEnemyArray[enemyID] = new Enemy(DUMB_ENEMY, 10, 13, WEST, true);
+			this.movedArray[enemyID] = -10;
+			break;
+		case 1:
+			this.mapArray[11][9] = '1';
+			this.enemyArray[enemyID] = new Enemy(DUMB_ENEMY, 9, 11, EAST, false);
+			this.prevEnemyArray[enemyID] = new Enemy(DUMB_ENEMY, 9, 11, EAST, false);
+			this.movedArray[enemyID] = -10;
+			break;
+		case 2:
+			this.mapArray[11][10] = '2';
+			this.enemyArray[enemyID] = new Enemy(DUMB_ENEMY, 10, 11, NORTH, false);
+			this.enemyArray[enemyID] = new Enemy(DUMB_ENEMY, 10, 11, NORTH, false);
+			this.movedArray[enemyID] = -10;
+			break;
+		case 3:
+			this.mapArray[11][11] = '3';
+			this.enemyArray[enemyID] = new Enemy(SMART_ENEMY, 11, 11, WEST, false);
+			this.prevEnemyArray[enemyID] = new Enemy(SMART_ENEMY, 11, 11, WEST, false);
+			this.movedArray[enemyID] = -10;
+			break;
+	}
 }
 
 // type is either Friesman (0) or Enemy (1), number specifies the ID of the enemy
@@ -170,8 +207,10 @@ Board.prototype.move = function(type, number)
 						this.score += 10;
 					else if (this.mapArray[nextY][nextX] === ROAD_POWER)
 					{
+						var self = this;
 						this.score += 50;
 						this.power = true;
+						setTimeout(function (){self.power = false}, 7000);
 					}
 					//////////////// TODO: UPDATE THE SCORE AND DECREMENT THE # OF KETCHUP DOTS //////////////////////////////
 					this.mapArray[currY][currX] = ROAD_EMPTY;	// mark the point as visited
@@ -261,9 +300,13 @@ Board.prototype.move = function(type, number)
 			}
 		}
 
-		if(MOVED < 10)
+		if(MOVED < 10 || this.movedArray[number] < 10)
 		{
-			switch(MOVED)
+			if(this.movedArray[number] < 10)
+				var m = this.movedArray[number];
+			else
+				var m = MOVED;
+			switch(m)
 			{
 				case 0:
 					if(number === 0)

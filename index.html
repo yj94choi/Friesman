@@ -99,6 +99,8 @@ main()
 		objColor = texture2D(texture3, fTexCoord);
 	if(objectID == 3)
 		objColor = vec4(0.0, 1.0, 0.0, 1.0);
+	if(objectID == 10)
+		objColor = vec4(0.0, 0.0, 1.0, 1.0);
 	if(objectID == 4)
 		objColor = vec4(0.6, 0.2, 0.2, 1.0);
 	if(objectID == 5)
@@ -149,7 +151,6 @@ main()
 <script type="text/javascript" src="torch.js"></script>
 <script type="text/javascript" src="floor.js"></script>
 <script type="text/javascript" src="obstacle.js"></script>
-<script type="text/javascript" src="shade.js"></script>
 <script type="text/javascript" src="loadImage.js"></script>
 
 <img id="fire" src="images/fire2.jpeg" hidden></img>

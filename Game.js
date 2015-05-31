@@ -295,10 +295,13 @@ function render()
             for (var i = 0; i < 4; i++)
             {
                 gameBoard.move(MOVE_ENEMY, i);
+                if(gameBoard.movedArray[i] <= 10)
+                    gameBoard.movedArray[i]++;
             }
         if(MOVED < 20)
             MOVED++;
         timer = 0;
+        // console.log(gameBoard.power);
     }
 
     modelViewM = getModelView(modelViewIndex);
@@ -370,13 +373,23 @@ function render()
         enemy_y_amount = gameBoard.prevEnemyArray[i].y + (gameBoard.enemyArray[i].y - gameBoard.prevEnemyArray[i].y) * timer / anim_speed;
         objToWorldM = mult(translate(enemy_x_amount,enemy_y_amount, 0.0), scale(0.3, 0.3, 0.3));
         gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
-        gl.uniform1i(objectIDLoc, 3);
+        if(gameBoard.power)
+            gl.uniform1i(objectIDLoc, 10);
+        else
+            gl.uniform1i(objectIDLoc, 3);
         gl.drawArrays( gl.TRIANGLE_STRIP, num_floor_points+num_fire_points+num_cube_points+num_sphere_points+num_friesman_points, num_ring_points);
 
         if(Math.abs(enemy_x_amount-fries_x_amount) <= 0.2 && Math.abs(enemy_y_amount-fries_y_amount) <= 0.2)
         {
-            resetObstacles();
-            gameBoard.die();
+            if(gameBoard.power)
+            {
+                gameBoard.killEnemy(i);
+            }
+            else
+            {
+                resetObstacles();
+                gameBoard.die();
+            }
         }
     }
 
@@ -470,7 +483,6 @@ function render()
     gl.uniform1i(objectIDLoc, 8);
     gl.drawArrays(gl.TRIANGLES, num_floor_points+num_fire_points+num_cube_points+num_sphere_points+num_friesman_points+num_ring_points+num_stick_points+num_obstacle_points, num_shade_points);
     
-
     gl.enable( gl.BLEND );
     gl.blendFunc( gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA );
     gl.depthMask( false );
