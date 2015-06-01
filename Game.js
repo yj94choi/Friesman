@@ -6,7 +6,7 @@ var tangents = [];
 
 var canvas;
 var textCanvas;
-var cts;
+var ctx;
 var program;
 var objToWorldM;
 var modelViewM;
@@ -101,8 +101,9 @@ window.onload = function init()
     {
         if(input.keyCode != 0 && titlepage >= 1.0)
         {
-            titlepage -= 0.05;
+            titlepage -= 0.01;
             gameBoard.startAudio.play();
+            setTimeout(function(){MOVED = 0;}, 4000);
         }
         else
         {
@@ -270,7 +271,7 @@ function render()
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     // TODO: USE A REAL TIMER
-    if(titlepage <= 0.0 && timer%anim_speed === 0)
+    if(MOVED >= 0 && timer%anim_speed === 0)
     {
         gameBoard.move(MOVE_FRIESMAN, 0);
         if(!disable_enemy)
@@ -283,7 +284,6 @@ function render()
         if(MOVED < 20)
             MOVED++;
         timer = 0;
-        // console.log(gameBoard.power);
     }
 
     modelViewM = getModelView(modelViewIndex);
@@ -327,6 +327,7 @@ function render()
             {
                 resetObstacles();
                 gameBoard.die();
+                setTimeout(function(){MOVED = 0;}, 4000);
             }
         }
     }
@@ -385,16 +386,10 @@ function render()
             titlepage -= 0.01;
     }
     gl.disableVertexAttribArray(vTexCoord);
-    // ==================== DISNABLE : texture coordinate buffer ====================    
+    // ==================== DISABLE : texture coordinate buffer ====================    
     gl.depthMask( true );
     gl.disable( gl.BLEND );
     // ==================== DISABLE : blending ====================
-
-    timer++;
-    if (MOVED === 0)
-        setTimeout(function (){window.requestAnimFrame(render)}, 100);
-    else if (!pause)
-        window.requestAnimFrame(render);
 
     // score
     ctx.beginPath();
@@ -411,7 +406,6 @@ function render()
     ctx.fillText(gameBoard.score, 230, 35);
     ctx.fillStyle = "black"
     ctx.fillText("Life: ", 450, 35);
-
     for(var k=0; k < gameBoard.life; k++)
     {
         ctx.rect(475 + k*40, 12.5, 25, 25);
@@ -419,4 +413,8 @@ function render()
         ctx.fill();
     }
     ctx.restore();
+
+    timer++;
+    if (!pause)
+        window.requestAnimFrame(render);
 }
