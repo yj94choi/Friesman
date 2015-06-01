@@ -35,7 +35,7 @@ var pause = false;
 var rock1;
 var rock1_init_position = vec3(0,11,20);
 var rock1_init_speed = vec3(0.0375, 0.00, 0.05);
-var rock1_total_distance = vec3(5, 0, -20);
+var rock_x_distance = 5;
 var rock2;
 var rock2_init_position = vec3(20,11,20);
 var rock2_init_speed = vec3(-0.0375,0.00,0.05);
@@ -358,7 +358,7 @@ function render()
     {
         resetObstacles();
     }
-    var percent_moved = (rock1.position[0])/(rock1_total_distance);
+    var percent_moved = (rock1.position[0])/(rock_x_distance);
     var shade_scale_factor = 4*(percent_moved/5);
     // render rocks and shades
     obstacle.render(rock1.position);
