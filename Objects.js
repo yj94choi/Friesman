@@ -203,7 +203,7 @@ function Title(start, length)
 
 Title.prototype.render = function()
 {
-    var objToWorldM = mult(translate(10,10,15),scale(8,8,0));
+    var objToWorldM = mult(translate(10,10,15),scale(6.5,6.5,0));
     gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
     gl.uniform1f(opacityLoc, titlepage);
     gl.uniform1i(objectIDLoc, 10);

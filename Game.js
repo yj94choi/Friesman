@@ -5,6 +5,8 @@ var texCoords = [];
 var tangents = [];
 
 var canvas;
+var textCanvas;
+var cts;
 var program;
 var objToWorldM;
 var modelViewM;
@@ -57,6 +59,9 @@ window.onload = function init()
     
     gl = WebGLUtils.setupWebGL( canvas );
     if ( !gl ) { alert( "WebGL isn't available" ); }
+
+    textCanvas = document.getElementById("textCanvas");
+    ctx = textCanvas.getContext("2d");
 
     gameBoard = new Board();
 
@@ -127,11 +132,11 @@ window.onload = function init()
                 else
                     gameBoard.friesMan.nextDir = (gameBoard.friesMan.currDir+3)%4;
             }
-            else if (input.keyCode === 90)  // z key
+            else if (input.keyCode === 32)  // space bar
             {
                 modelViewIndex = (modelViewIndex+1) % 3
             }
-            else if (input.keyCode === 80)  // p key (pause)
+            else if (input.keyCode === 13)  // enter (pause)
             {
                 pause = !pause;
                 if(!pause)
@@ -390,4 +395,28 @@ function render()
         setTimeout(function (){window.requestAnimFrame(render)}, 100);
     else if (!pause)
         window.requestAnimFrame(render);
+
+    // score
+    ctx.beginPath();
+    ctx.rect(100, 0, ctx.canvas.width-200, ctx.canvas.height);
+    ctx.fillStyle = "#FFFF66";
+    ctx.fill();
+    ctx.fillStyle = "black";
+    ctx.restore();
+    ctx.beginPath();
+    ctx.font = "25px Impact";
+    ctx.textAlign = "center";
+    ctx.fillText("Score: ", 170, 35);
+    ctx.fillStyle = "red";
+    ctx.fillText(gameBoard.score, 230, 35);
+    ctx.fillStyle = "black"
+    ctx.fillText("Life: ", 450, 35);
+
+    for(var k=0; k < gameBoard.life; k++)
+    {
+        ctx.rect(475 + k*40, 12.5, 25, 25);
+        ctx.fillStyle = "red";
+        ctx.fill();
+    }
+    ctx.restore();
 }

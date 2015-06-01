@@ -121,6 +121,7 @@ Board.prototype.die = function()
     this.prevFriesMan = new Friesman(10, 5, NORTH);
 
     this.power = false;
+    this.life--;
 	MOVED = -1;
 	this.diedAudio.play();
 }
