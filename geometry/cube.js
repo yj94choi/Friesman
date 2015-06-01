@@ -10,6 +10,28 @@ var cubeVertices = [
     vec4( 0.5, -0.5, -0.5, 1.0 )
 ];
 
+var stickVertices = [
+    vec4( -0.15, -0.15,  0.5, 1.0 ),
+    vec4( -0.15,  0.15,  0.5, 1.0 ),
+    vec4( 0.15,  0.15,  0.5, 1.0 ),
+    vec4( 0.15, -0.15,  0.5, 1.0 ),
+    vec4( -0.05, -0.05, -0.5, 1.0 ),
+    vec4( -0.05,  0.05, -0.5, 1.0 ),
+    vec4( 0.05,  0.05, -0.5, 1.0 ),
+    vec4( 0.05, -0.05, -0.5, 1.0 )
+];
+
+var fireVertices = [
+    vec4( -0.15, -0.15,  0.15, 1.0 ),
+    vec4( -0.15,  0.15,  0.15, 1.0 ),
+    vec4( 0.15,  0.15,  0.15, 1.0 ),
+    vec4( 0.15, -0.15,  0.15, 1.0 ),
+    vec4( -0.15, -0.15, -0.15, 1.0 ),
+    vec4( -0.15,  0.15, -0.15, 1.0 ),
+    vec4( 0.15,  0.15, -0.15, 1.0 ),
+    vec4( 0.15, -0.15, -0.15, 1.0 )
+];
+
 var texCoord = [
     vec4(0, 0, 0.0, 1.0),
     vec4(0, 1, 0.0, 1.0),
@@ -25,44 +47,44 @@ var texCoord2 = [
 ];
 
 // push points and texture coordinates for a quadrilateral
-function quad(a, b, c, d, n, mapface, t)
+function quad(a, b, c, d, n, vertices, mapface, t)
 {
-    points.push(cubeVertices[a]);
+    points.push(vertices[a]);
     normals.push(n);
     if(mapface)
         texCoords.push(t[1]);
     else
         texCoords.push(t[0]);
 
-    points.push(cubeVertices[b]); 
+    points.push(vertices[b]); 
     normals.push(n);
     if(mapface)
         texCoords.push(t[2]); 
     else
         texCoords.push(t[0]);
 
-    points.push(cubeVertices[c]); 
+    points.push(vertices[c]); 
     normals.push(n);
     if(mapface)
         texCoords.push(t[3]); 
     else
         texCoords.push(t[0]);
        
-    points.push(cubeVertices[a]); 
+    points.push(vertices[a]); 
     normals.push(n);
     if(mapface)
         texCoords.push(t[1]); 
     else
         texCoords.push(t[0]);
 
-    points.push(cubeVertices[c]); 
+    points.push(vertices[c]); 
     normals.push(n);
     if(mapface)
         texCoords.push(t[3]); 
     else
         texCoords.push(t[0]);
 
-    points.push(cubeVertices[d]); 
+    points.push(vertices[d]); 
     normals.push(n);
     texCoords.push(texCoord[0]);   
 }
@@ -77,32 +99,36 @@ function quadTangent(a, b, c, d)
     tangents.push(tangent);
     tangents.push(tangent);
     tangents.push(tangent);
-    // bitangents.push(bitangent);
-    // bitangents.push(bitangent);
-    // bitangents.push(bitangent);
-    // bitangents.push(bitangent);
 }
 
+// id 0 : friesman, 1: maze, 2 : stick, 3 : fire
 // push points and texture coordinates for a cube
-function cube(friesman)
+function cube(id)
 {
-    if(friesman)
-        var t = texCoord;
-    else
+    if(id === 1)
         var t = texCoord2;
+    else
+        var t = texCoord;
 
-    quad(1, 2, 3, 0, vec4(0,0,1,1), !friesman, t);
-    quad(3, 2, 6, 7, vec4(1,0,0,1), !friesman, t);
-    quad(4, 7, 3, 0, vec4(0,-1,0,1), !friesman, t);
-    quad(1, 2, 6, 5, vec4(0,1,0,1), true, t);  // face of friesman
-    quad(4, 5, 6, 7, vec4(0,0,-1,1), !friesman, t);
-    quad(5, 4, 0, 1, vec4(-1,0,0,1), !friesman, t);
+    if(id === 0 || id === 1)
+        var vertices = cubeVertices;
+    else if(id === 2)
+        var vertices = stickVertices;
+    else if(id === 3)
+        var vertices = fireVertices;
 
-    if(!friesman)   // if maze
+    quad(1, 2, 3, 0, vec4(0,0,1,1), vertices, id!==0, t);
+    quad(3, 2, 6, 7, vec4(1,0,0,1), vertices, id!==0, t);
+    quad(4, 7, 3, 0, vec4(0,-1,0,1), vertices, id!==0, t);
+    quad(1, 2, 6, 5, vec4(0,1,0,1), vertices, true, t);  // face of friesman
+    quad(4, 5, 6, 7, vec4(0,0,-1,1), vertices, id!==0, t);
+    quad(5, 4, 0, 1, vec4(-1,0,0,1), vertices, id!==0, t);
+
+    if(id === 0)   // if maze
     {
         quadTangent(1, 2, 3, 0);
         quadTangent(3, 2, 6, 7);
-        quadTangent(4, 7, 3, 0);
+        quadTangent(0, 3, 7, 4);
         quadTangent(1, 2, 6, 5);
         quadTangent(4, 5, 6, 7);
         quadTangent(5, 4, 0, 1);

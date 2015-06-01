@@ -66,6 +66,7 @@ precision mediump float;
 // id 2 : friesman (yellow)
 // id 3 : enemies (green)
 uniform int objectID;
+uniform float opacity;
 
 varying vec2 fTexCoord;		// interpolated texture coordinate values
 uniform sampler2D texture0;	// texture 0: fire
@@ -99,7 +100,7 @@ main()
 		objColor = texture2D(texture3, fTexCoord);
 	if(objectID == 3)
 		objColor = vec4(0.0, 1.0, 0.0, 1.0);
-	if(objectID == 10)
+	if(objectID == 11)
 		objColor = vec4(0.0, 0.0, 1.0, 1.0);
 	if(objectID == 4)
 		objColor = vec4(0.6, 0.2, 0.2, 1.0);
@@ -113,9 +114,15 @@ main()
 		gl_FragColor = vec4(0.51,0.51,0.51,1.0);
 	else if(objectID == 9)
 		gl_FragColor = vec4(0.01, 0.01, 1.0, 0.6);
-	else
+	else if(objectID == 10)
 	{
-		
+		objColor = texture2D(texture1, fTexCoord);
+		// objColor.a = 0.0;
+		objColor.a = opacity;
+		gl_FragColor = objColor;
+	}
+	else
+	{	
 		vec4 ambientProduct = objColor * vec4(0.5, 0.5, 0.5, 1.0);;
 		vec4 diffuseProduct = objColor * vec4(0.5, 0.5, 0.5, 1.0);
 		vec4 specularProduct = vec4(1.0, 1.0, 1.0, 1.0);
@@ -144,20 +151,19 @@ main()
 <script type="text/javascript" src="Game.js"></script>
 <script type="text/javascript" src="Board.js"></script>
 <script type="text/javascript" src="Characters.js"></script>
-<script type="text/javascript" src="friesman.js"></script>
-<script type="text/javascript" src="ring.js"></script>
-<script type="text/javascript" src="ketchupdot.js"></script>
-<script type="text/javascript" src="cube.js"></script>
-<script type="text/javascript" src="torch.js"></script>
-<script type="text/javascript" src="floor.js"></script>
+<script type="text/javascript" src="geometry/ring.js"></script>
+<script type="text/javascript" src="geometry/sphere.js"></script>
+<script type="text/javascript" src="geometry/cube.js"></script>
+<script type="text/javascript" src="geometry/square.js"></script>
+<script type="text/javascript" src="Objects.js"></script>
 <script type="text/javascript" src="obstacle.js"></script>
 <script type="text/javascript" src="loadImage.js"></script>
 
 <img id="fire" src="images/fire2.jpeg" hidden></img>
-<img id="brick" src="images/stonebrick.jpeg" hidden></img>
 <img id="wall" src="images/wall_normal.png" hidden></img>
 <img id="logo" src="images/tile.png" hidden></img>
 <img id="friesman" src="images/friesman.jpeg" hidden></img>
+<img id="start" src="images/StartScreen.jpg" hidden></img>
 
 <body>
 <canvas id="gl-canvas" width="720" height="540">

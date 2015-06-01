@@ -16,13 +16,3 @@ ObstacleObject.prototype.hasCollided = function(x, y, z)
 {
     return (Math.abs(this.position[0] - x) <= 0.3 && Math.abs(this.position[1] - y) <= 0.3 && this.position[2] <= z);
 }
-
-function ShadeObject(pos)
-{
-    this.position = pos;
-}
-
-ShadeObject.prototype.set = function(pos)
-{
-    this.position = pos;
-}

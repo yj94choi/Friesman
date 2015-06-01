@@ -10,7 +10,7 @@ function loadTextures()
     gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
     gl.uniform1i(gl.getUniformLocation(program, "texture0"), 0);
 
-    var image1 = document.getElementById("brick");
+    var image1 = document.getElementById("start");
     var texture1 = gl.createTexture();
     gl.activeTexture(gl.TEXTURE1);
     gl.bindTexture( gl.TEXTURE_2D, texture1 );
