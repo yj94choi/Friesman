@@ -66,6 +66,12 @@ function Friesman2()
     this.armDir = 1;
 }
 
+Friesman2.prototype.resetArmPosition = function()
+{
+    this.armAngle = 0;
+    this.armDir = 1;
+}
+
 Friesman2.prototype.render = function()
 {
     var matrixStack = new Mat4Stack();
@@ -159,9 +165,12 @@ Friesman2.prototype.render = function()
     matrixStack.pop();
     gl.uniformMatrix3fv(mNormalLoc, false, new flatten(mat4To3(modelViewM)));
 
-    if(this.armAngle > 20 || this.armAngle < -20)
-        this.armDir = this.armDir *= -1;
-    this.armAngle += this.armDir;
+    if(MOVED >= 0)
+    {
+        if(this.armAngle > 20 || this.armAngle < -20)
+            this.armDir = this.armDir *= -1;
+        this.armAngle += this.armDir * 2;
+    }
 }
 
 // ==================== ketchupdot object ====================

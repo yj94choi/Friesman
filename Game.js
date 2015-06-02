@@ -333,6 +333,7 @@ function render()
             else
             {
                 resetObstacles();
+                friesman.resetArmPosition();
                 modelViewIndex = 0; // reset camera view
                 gameBoard.die();
                 setTimeout(function(){MOVED = 0;}, 4000);
@@ -366,10 +367,10 @@ function render()
     if (rock1.hasCollided(fries_x_amount, fries_y_amount, 1.75) || rock2.hasCollided(fries_x_amount, fries_y_amount, 1.75))
     {
         resetObstacles();
+        friesman.resetArmPosition();
         modelViewIndex = 0; // reset camera view
         gameBoard.die();
         setTimeout(function(){MOVED = 0;}, 4000);
-
     }
     else if(rock1.position[2] <= -0.2)  // if rocks reached the bottom of the map
     {
