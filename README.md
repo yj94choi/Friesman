@@ -4,14 +4,20 @@ UCLA CS174A Final Project
 
 ### Team Members
 YooJung Choi
+
 Dong Joon Kim
+
 Yungunn Ko
+
 Brian Lee
+
 Gee Won Jo
 
 ### Controls
 Arrow keys: move
+
 Enter: pause
+
 Spacebar: change camera view
 
 ## Project Description
