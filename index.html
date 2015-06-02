@@ -98,6 +98,8 @@ main()
 		objColor = vec4(0.9765, 0.6667, 0.5333, 1.0);
 	if(objectID == 2)
 		objColor = texture2D(texture3, fTexCoord);
+	if(objectID == 12)
+		objColor = vec4(1.0, 1.0, 0.0, 1.0);
 	if(objectID == 3)
 		objColor = vec4(0.0, 1.0, 0.0, 1.0);
 	if(objectID == 11)
@@ -158,6 +160,7 @@ main()
 <script type="text/javascript" src="Objects.js"></script>
 <script type="text/javascript" src="obstacle.js"></script>
 <script type="text/javascript" src="loadImage.js"></script>
+<script type="text/javascript" src="stack.js"></script>
 
 <img id="fire" src="images/fire2.jpeg" hidden></img>
 <img id="wall" src="images/wall_normal.png" hidden></img>

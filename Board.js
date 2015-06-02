@@ -91,10 +91,7 @@ Board.prototype.die = function()
 	{
 		var enemyY = this.enemyArray[i].y;
 		var enemyX = this.enemyArray[i].x;
-		if (isEnemy(this.prevState[i]))
-			this.mapArray[enemyY][enemyX] = ROAD_EMPTY;
-		else
-			this.mapArray[enemyY][enemyX] = this.prevState[i];
+		this.mapArray[enemyY][enemyX] = ROAD_EMPTY;
 		this.prevState[i] = ROAD_EMPTY;
 	}
 
@@ -620,7 +617,7 @@ Board.prototype.move = function(type, number)
 				else if(this.mapArray[nextY][nextX] === 'F')		// enemy has killed Friesman
 				{
 					this.mapArray[currY][currX] = this.prevState[number];
-					// this.mapArray[nextY][nextX] = currChar;
+					// this.mapArray[nextY][nextX] = ROAD_EMPTY;
 					this.enemyArray[number].x += (nextX - currX);
 					this.enemyArray[number].y += (nextY - currY);
 					

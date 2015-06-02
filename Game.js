@@ -55,17 +55,18 @@ var anim_speed = 10;    // smaller number -> faster animation
 
 window.onload = function init()
 {
+    // set up webgl canvas
     canvas = document.getElementById( "gl-canvas" );
-    
     gl = WebGLUtils.setupWebGL( canvas );
     if ( !gl ) { alert( "WebGL isn't available" ); }
 
+    // set up text canvas
     textCanvas = document.getElementById("textCanvas");
     ctx = textCanvas.getContext("2d");
 
+    // main game board
     gameBoard = new Board();
-
-    //obstacle
+    // obstacle
     rock1 = new ObstacleObject(rock1_init_position, rock1_init_speed, vec3(0.0, 0.0, -0.003));
     rock2 = new ObstacleObject(rock2_init_position, rock2_init_speed,vec3(0.0,0.0,-0.003));
     
@@ -99,11 +100,12 @@ window.onload = function init()
 
     window.onkeydown = function(input)
     {
+        // any first key press will start the game
         if(input.keyCode != 0 && titlepage >= 1.0)
         {
             titlepage -= 0.01;
-            gameBoard.startAudio.play();
-            setTimeout(function(){MOVED = 0;}, 4000);
+            gameBoard.startAudio.play();    // play audio
+            setTimeout(function(){MOVED = 0;}, 4000);   // allow movements after 4s
         }
         else
         {
@@ -311,7 +313,7 @@ function render()
 
     friesman.render();  // render friesman
 
-    gl.disableVertexAttribArray( vTexCoord );
+    // gl.disableVertexAttribArray( vTexCoord );        disabled in friesman.render()
     // ==================== DISABLE : texture coordinate buffer ====================
 
     for(var i = 0; i < 4; i++)
@@ -326,6 +328,7 @@ function render()
             else
             {
                 resetObstacles();
+                modelViewIndex = 0; // reset camera view
                 gameBoard.die();
                 setTimeout(function(){MOVED = 0;}, 4000);
             }
@@ -358,7 +361,10 @@ function render()
     if (rock1.hasCollided(fries_x_amount, fries_y_amount, 1.75) || rock2.hasCollided(fries_x_amount, fries_y_amount, 1.75))
     {
         resetObstacles();
+        modelViewIndex = 0; // reset camera view
         gameBoard.die();
+        setTimeout(function(){MOVED = 0;}, 4000);
+
     }
     else if(rock1.position[2] <= -0.2)  // if rocks reached the bottom of the map
     {
