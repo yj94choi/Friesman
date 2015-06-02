@@ -412,11 +412,11 @@ function render()
     ctx.beginPath();
     ctx.font = "25px Impact";
     ctx.textAlign = "center";
-    ctx.fillText("Score: ", 170, 35);
+    ctx.fillText("SCORE: ", 170, 35);
     ctx.fillStyle = "red";
     ctx.fillText(gameBoard.score, 230, 35);
     ctx.fillStyle = "black"
-    ctx.fillText("Life: ", 450, 35);
+    ctx.fillText("LIFE: ", 450, 35);
     for(var k=0; k < gameBoard.life; k++)
     {
         ctx.rect(475 + k*40, 12.5, 25, 25);
