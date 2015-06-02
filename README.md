@@ -1,39 +1,28 @@
-Javascript Style Guide
+# Friesman
 
-var
-	
-	Declaration with "var": Always
+UCLA CS174A Final Project
 
-constants
-	
-	Use "NAMES_LIKE_THIS" for constant values
+### Team Members
+YooJung Choi
+Dong Joon Kim
+Yungunn Ko
+Brian Lee
+Gee Won Jo
 
-semicolons
-	
-	Always use semicolons
+### Controls
+Arrow keys: move
+Enter: pause
+Spacebar: change camera view
 
-multiline string literals
-	
-	No
-
-
-functionNamesLikeThis
-
-variableNamesLikeThis
-
-ClassNamesLikeThis
-
-CONSTANT_VALUES_LIKE_THIS
-
-filenameslikethis.js
-
-Curly Braces
-	
-	if (something)
-	{
-		// ...
-	}
-	else
-	{
-		// ...
-	}
+## Project Description
+Friesman is a 3D adaptation of Pac-man ......
+### Required Topics
+* Camera position changes:
+* Lighting: 
+* Texture mapping: 
+### Advanced Topics
+* Collision detection:
+* Bump/Normal mapping:
+* Blending:
+* Physics simulation: 
+* Scene graph (hierarchical model representation using a stack): 
