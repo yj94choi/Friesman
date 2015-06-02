@@ -59,6 +59,8 @@ function Board()
 	];
 
 	this.power = false;
+	this.numKilled = 0;
+	this.numPower = 0;
 
 	this.movedArray = [10, 10, 10, 10];
 
@@ -82,17 +84,23 @@ Board.prototype.display = function()
 	}
 }
 
-Board.prototype.die = function()
+Board.prototype.die = function(enemyID)
 {
-	// 	var whichEnemy = parseInt(this.mapArray[nextY][nextX]);
  	this.mapArray[this.friesMan.y][this.friesMan.x] = ROAD_EMPTY;
-	// 	this.mapArray[nextY][nextX] = this.prevState[whichEnemy];
 
 	for (var i = 0; i < 4; i++)
 	{
 		var enemyY = this.enemyArray[i].y;
 		var enemyX = this.enemyArray[i].x;
-		this.mapArray[enemyY][enemyX] = ROAD_EMPTY;
+		if(i === enemyID)
+			this.mapArray[enemyY][enemyX] = ROAD_EMPTY;
+		else
+		{
+			if(isEnemy(this.prevState[i]))
+				this.mapArray[enemyY][enemyX] = ROAD_EMPTY;
+			else
+				this.mapArray[enemyY][enemyX] = this.prevState[i];
+		}
 		this.prevState[i] = ROAD_EMPTY;
 	}
 
@@ -158,6 +166,9 @@ Board.prototype.killEnemy = function(enemyID)
 			this.movedArray[enemyID] = -10;
 			break;
 	}
+
+	this.numKilled++;
+	this.score += 200 * this.numKilled;
 }
 
 // type is either Friesman (0) or Enemy (1), number specifies the ID of the enemy
@@ -209,7 +220,16 @@ Board.prototype.move = function(type, number)
 						var self = this;
 						this.score += 50;
 						this.power = true;
-						setTimeout(function (){self.power = false}, 7000);
+						this.numPower++;
+						var save = this.numPower;
+						setTimeout(function (){
+							if(save === self.numPower)
+							{
+								self.power = false;
+								self.numKilled = 0;
+								self.numPower = 0;
+							}
+						}, 7000);
 					}
 					//////////////// TODO: UPDATE THE SCORE AND DECREMENT THE # OF KETCHUP DOTS //////////////////////////////
 					this.mapArray[currY][currX] = ROAD_EMPTY;	// mark the point as visited
