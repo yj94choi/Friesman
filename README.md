@@ -20,6 +20,7 @@ Friesman is a 3D adaptation of Pac-man ......
 * Camera position changes:
 * Lighting: 
 * Texture mapping: 
+
 ### Advanced Topics
 * Collision detection:
 * Bump/Normal mapping:
