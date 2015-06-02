@@ -226,9 +226,9 @@ Board.prototype.move = function(type, number)
 							if(save === self.numPower)
 							{
 								self.power = false;
-								self.numKilled = 0;
 								self.numPower = 0;
 							}
+							self.numKilled = 0;
 						}, 7000);
 					}
 					//////////////// TODO: UPDATE THE SCORE AND DECREMENT THE # OF KETCHUP DOTS //////////////////////////////
