@@ -49,4 +49,24 @@ function loadTextures()
     gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
     gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
     gl.uniform1i(gl.getUniformLocation(program, "texture4"), 4);
+
+    var image5 = document.getElementById("happy");
+    var texture5 = gl.createTexture();
+    gl.activeTexture(gl.TEXTURE5);
+    gl.bindTexture( gl.TEXTURE_2D, texture5 );
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image5 );
+    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
+    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
+    gl.uniform1i(gl.getUniformLocation(program, "texture5"), 5);
+
+    var image6 = document.getElementById("sad");
+    var texture6 = gl.createTexture();
+    gl.activeTexture(gl.TEXTURE6);
+    gl.bindTexture( gl.TEXTURE_2D, texture6 );
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image6 );
+    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
+    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
+    gl.uniform1i(gl.getUniformLocation(program, "texture6"), 6);
 }

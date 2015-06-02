@@ -48,6 +48,7 @@ var enemy_x_amount;
 var enemy_y_amount;
 
 var titlepage = 1.0;
+var dots = 5;
 
 // for debugging
 var disable_enemy = false;
@@ -91,6 +92,8 @@ window.onload = function init()
     fire = new Fire();
     floor = new Floor();
     title = new Title(floor.pointsStart, floor.pointsLength);
+    happy_end = new Happy(floor.pointsStart,floor.pointsLength);
+    sad_end = new Sad(floor.pointsStart, floor.pointsLength)
     friesman = new Friesman2();
     ketchupdot = new Ketchupdot();
     enemy = new Enemy2();
@@ -300,6 +303,18 @@ function render()
     // ==================== ENABLE : texture coordinate buffer ====================
     gl.enableVertexAttribArray( vTexCoord );
 
+    if(gameBoard.life == 0)
+    {
+        sad_end.render();
+        pause = true;
+    }
+    else if (dots == 0)
+    {
+        happy_end.render();
+        resetObstacles();
+        pause = true;
+    }
+
     // ==================== ENABLE : tangents buffer ====================
     gl.enableVertexAttribArray( vTangent );
     for(var k = 0; k < walls.length; k++)
@@ -335,12 +350,13 @@ function render()
                 resetObstacles();
                 friesman.resetArmPosition();
                 modelViewIndex = 0; // reset camera view
-                gameBoard.die();
+                gameBoard.die(i);
                 setTimeout(function(){MOVED = 0;}, 4000);
             }
         }
     }
 
+    dots = 0;
     for ( var x = 2; x < 19; x++)
     {
         for ( var y = 1; y < 20; y++)
@@ -349,6 +365,7 @@ function render()
             {
                 var dotsize = gameBoard.mapArray[y][x] === ROAD_KETCHUP ? 0.12 : 0.2;
                 ketchupdot.render(vec3(x*cellSize, y*cellSize, 0.0), dotsize);  // render ketchupdots (spheres)
+                dots++;
             }
         }
     }

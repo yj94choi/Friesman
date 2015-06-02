@@ -295,3 +295,33 @@ Title.prototype.render = function()
     gl.uniform1i(objectIDLoc, 10);
     gl.drawArrays(gl.TRIANGLES, this.pointsStart, this.pointsLength);
 }
+
+// ===================== end object =====================
+
+function Happy(start, length)
+{
+    this.pointsStart = start;
+    this.pointsLength = length;
+}
+
+Happy.prototype.render = function()
+{
+    var objToWorldM = mult(translate(10,10,15), scale(6.5,6.5,0));
+    gl.uniformMatrix4fv(mObjToWorldLoc,false,new flatten(objToWorldM));
+    gl.uniform1i(objectIDLoc, 13);
+    gl.drawArrays(gl.TRIANGLES, this.pointsStart, this.pointsLength);
+}
+
+function Sad(start, length)
+{
+    this.pointsStart = start;
+    this.pointsLength = length;
+}
+
+Sad.prototype.render = function()
+{
+    var objToWorldM = mult(translate(10,10,15), scale(6.5,6.5,0));
+    gl.uniformMatrix4fv(mObjToWorldLoc,false,new flatten(objToWorldM));
+    gl.uniform1i(objectIDLoc, 14);
+    gl.drawArrays(gl.TRIANGLES, this.pointsStart, this.pointsLength);
+}
