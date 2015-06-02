@@ -56,13 +56,20 @@ Floor.prototype.render = function(loc)
 
 function Friesman2()
 {
-	this.pointsStart = points.length;
-	cube(0);	// push friesman points
-    this.pointsLength = points.length - this.pointsStart;
+    this.cubePointsStart = points.length;
+    cube(0);    // push friesman points
+    this.cubePointsLength = points.length - this.cubePointsStart;
+    this.spherePointsStart = points.length;
+    sphere(2, false);
+    this.spherePointsLength = points.length - this.spherePointsStart;
+    this.armAngle = 0;
+    this.armDir = 1;
 }
 
 Friesman2.prototype.render = function()
 {
+    var matrixStack = new Mat4Stack();
+    // root
     if(gameBoard.prevFriesMan.x === 0 || gameBoard.prevFriesMan.x === 20)
     {
         if(gameBoard.friesMan.currDir === WEST)
@@ -77,14 +84,84 @@ Friesman2.prototype.render = function()
         fries_y_amount = gameBoard.prevFriesMan.y + (gameBoard.friesMan.y - gameBoard.prevFriesMan.y) * timer / anim_speed;
     }
     var fRotation = getFriesmanRotation(gameBoard.friesMan.currDir);
-    var objToWorldM = scale(0.3, 0.3, 1.5);
-    objToWorldM = mult(fRotation, objToWorldM);
-    objToWorldM = mult(translate(fries_x_amount, fries_y_amount, 0.25), objToWorldM);
-    gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
-    gl.uniformMatrix3fv(mNormalLoc, false, new flatten(mat4To3(mult(modelViewM, fRotation))));
-    gl.uniform1i(objectIDLoc, 2);
-    gl.drawArrays( gl.TRIANGLES, this.pointsStart, this.pointsLength);
+    var matrix = mult(translate(fries_x_amount, fries_y_amount, 0.5), fRotation);
+    matrixStack.push(matrix);
+        // body
+        var matrix = scale(0.3, 0.3, 1.5);
+        matrixStack.push(matrix);
+        var objToWorldM = matrixStack.getMatrix();
+        gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
+        gl.uniformMatrix3fv(mNormalLoc, false, new flatten(inverse(transpose(mat4To3(mult(modelViewM, objToWorldM))))));
+        gl.uniform1i(objectIDLoc, 2);
+        gl.drawArrays(gl.TRIANGLES, this.cubePointsStart, this.cubePointsLength);
+        matrixStack.pop();
+
+        gl.disableVertexAttribArray( vTexCoord );
+
+        // right shoulder
+        var matrix = translate(0, 0, -0.2);
+        matrix = mult(rotate(this.armAngle, vec3(1,0,0)), matrix);
+        matrix = mult(translate(0.21, 0, 0.2), matrix);
+        matrixStack.push(matrix);
+        gl.uniform1i(objectIDLoc, 12);
+
+            // right forearm
+            var matrix = rotate(90, vec3(1,0,0));
+            matrix = mult(translate(0, 0.07, -0.1), matrix);
+            matrixStack.push(matrix);
+
+                // right hand
+                var objToWorldM = scale(0.05, 0.05, 0.05);
+                objToWorldM = mult(translate(0, 0, -0.13), objToWorldM);
+                objToWorldM = mult(matrixStack.getMatrix(), objToWorldM);
+                gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
+                gl.drawArrays(gl.TRIANGLES, this.spherePointsStart, this.spherePointsLength);
+
+            var objToWorldM = mult(matrixStack.getMatrix(), scale(0.1, 0.1, 0.2));
+            gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
+            gl.drawArrays(gl.TRIANGLES, this.cubePointsStart, this.cubePointsLength);
+            matrixStack.pop();            
+
+        var objToWorldM = mult(matrixStack.getMatrix(), scale(0.1, 0.1, 0.25));
+        gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
+        gl.drawArrays(gl.TRIANGLES, this.cubePointsStart, this.cubePointsLength);
+        matrixStack.pop()
+
+        // left shoulder
+        var matrix = translate(0, 0, -0.2);
+        matrix = mult(rotate(-this.armAngle, vec3(1,0,0)), matrix);
+        matrix = mult(translate(-0.21, 0, 0.2), matrix);
+        matrixStack.push(matrix);
+        gl.uniform1i(objectIDLoc, 12);
+
+            // left forearm
+            var matrix = rotate(90, vec3(1,0,0));
+            matrix = mult(translate(0, 0.07, -0.1), matrix);
+            matrixStack.push(matrix);
+
+                // left hand
+                var objToWorldM = scale(0.05, 0.05, 0.05);
+                objToWorldM = mult(translate(0, 0, -0.13), objToWorldM);
+                objToWorldM = mult(matrixStack.getMatrix(), objToWorldM);
+                gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
+                gl.drawArrays(gl.TRIANGLES, this.spherePointsStart, this.spherePointsLength);
+
+            var objToWorldM = mult(matrixStack.getMatrix(), scale(0.1, 0.1, 0.2));
+            gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
+            gl.drawArrays(gl.TRIANGLES, this.cubePointsStart, this.cubePointsLength);
+            matrixStack.pop();            
+
+        var objToWorldM = mult(matrixStack.getMatrix(), scale(0.1, 0.1, 0.25));
+        gl.uniformMatrix4fv(mObjToWorldLoc, false, new flatten(objToWorldM));
+        gl.drawArrays(gl.TRIANGLES, this.cubePointsStart, this.cubePointsLength);
+        matrixStack.pop()
+
+    matrixStack.pop();
     gl.uniformMatrix3fv(mNormalLoc, false, new flatten(mat4To3(modelViewM)));
+
+    if(this.armAngle > 20 || this.armAngle < -20)
+        this.armDir = this.armDir *= -1;
+    this.armAngle += this.armDir;
 }
 
 // ==================== ketchupdot object ====================
