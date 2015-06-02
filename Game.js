@@ -97,10 +97,15 @@ window.onload = function init()
     obstacle = new Obstacle();
     shade = new Shade();
 
+    var introMusic = true;
+    gameBoard.introAudio.play();
+
     window.onkeydown = function(input)
     {
         if(input.keyCode != 0 && titlepage >= 1.0)
         {
+            gameBoard.introAudio.pause();
+            introMusic = false;
             titlepage -= 0.01;
             gameBoard.startAudio.play();
             setTimeout(function(){MOVED = 0;}, 4000);

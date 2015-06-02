@@ -10,6 +10,7 @@ var MOVE_ENEMY = 1;
 
 function Board()
 {
+	this.introAudio = new Audio('audio/intro.mp3');
 	this.startAudio = new Audio('audio/start.mp3');
 	// this.startAudio.play();
 	this.diedAudio = new Audio('audio/nonono.mp3');
